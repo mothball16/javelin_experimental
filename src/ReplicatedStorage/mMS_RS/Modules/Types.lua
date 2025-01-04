@@ -1,6 +1,9 @@
 --!strict
 
 local module = {}
+local RS = game:GetService("ReplicatedStorage")
+local Packages = RS:WaitForChild("Packages")
+local Signal = require(Packages:WaitForChild("Signal"))
 
 --static data not relevant to customization plus the missile config
 export type MissileFields = MissileConfig & {
@@ -59,6 +62,16 @@ export type MissileSnapshot = {
 	active: boolean,
 }
 
+--template for any system that fires missiles because they all have to go through mMS_Manager
+export type MissileSystem = {
+	object: Instance,
+	state: Folder,
+	Setup: () -> (),
+	--When object is ready to go
+	Cleanup: () -> (),
+	--Send to the manager to keep missile after system is cleaned up
+	OnFire: Signal.Signal<MissileFields>
+}
 
 
 

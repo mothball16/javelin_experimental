@@ -1,1 +1,0 @@
-game.CollectionService:AddTag(script.Parent,"JavLoad")

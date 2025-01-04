@@ -8,7 +8,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Roact = require(ReplicatedStorage.Packages.Roact)
 local indicator = Roact.Component:extend("Indicator")
 
-
+function indicator:init(props)
+	
+end
 
 function indicator:render()
 	return Roact.createElement("ImageLabel", {
@@ -19,8 +21,6 @@ function indicator:render()
 		
 	})
 end
-
-
 
 
 return indicator

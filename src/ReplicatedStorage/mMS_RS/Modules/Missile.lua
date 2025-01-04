@@ -127,7 +127,7 @@ end
 
 --add missile functionality (isn't called for replicated missiles)
 function Missile.Init(self: Missile)
-	assert(self.fields.initSpeed :: number)
+	assert(self.fields.initSpeed :: number, "initSpeed not defined.")
 	--set up the movers
 	self.main.Anchored = false
 
@@ -141,7 +141,7 @@ function Missile.Init(self: Missile)
 	self.mainRot.CFrame = self.main.CFrame
 	--wait till ignition, set up the coroutine
 	coroutine.resume(coroutine.create(function()
-		assert(self.fields.maxSpeed and self.fields.accel)
+		assert(self.fields.maxSpeed and self.fields.accel, "maxSpeed/accel not defined")
 		task.wait(self.fields.initTime)
 		
 		
@@ -200,7 +200,7 @@ end
 
 --predict the position of the target at point of impact
 function Missile.PredictIntercept(self: Missile): (Vector3, number)
-	assert(self.fields.iterations,self.fields.maxSpeed,self.fields.accel)
+	assert(self.fields.iterations and self.fields.maxSpeed and self.fields.accel, "iterations/maxSpeed/accel not defined.")
 	
 	--cache vars
 	local origin: Vector3 		= self.main.Position
@@ -228,7 +228,8 @@ function Missile.PredictIntercept(self: Missile): (Vector3, number)
 end
 
 
---https://www.desmos.com/calculator/l2kb4axhr4
+--- modeled after https://www.desmos.com/calculator/l2kb4axhr4
+--- @param progress number - number between 0 and 1 as to the X value in the desmos graph
 function Missile.GetDesiredAltitude(self: Missile, progress: number): number
 	assert(self.fields.peak :: number, "self.fields.peak isn't a number?")
 
@@ -256,22 +257,46 @@ function Missile.UpdateForces(self: Missile, dir: CFrame?)
 end
 
 
+--- toggles on/off specified emitters on the missile
+--- @param targets {string} - the names of emitters to act upon
+function Missile.FX(self: Missile, targets: {string}, on: boolean)
+
+
+	local emitters = self.object:FindFirstChild("Emitters")
+	assert(emitters,"emitters not found in missile of type " .. self.fields.model .. ".")
+	for _,emitter in pairs(emitters:GetChildren()) do
+		if not emitter:IsA("BasePart") then 
+			warn("warning: there should be nothing but baseparts as children of folder Emitters in missile of type " .. self.fields.model .. ".")
+			continue 
+		end
+		if table.find(targets,emitter.Name) then
+			for _, fx in pairs(emitter:GetChildren()) do
+				if fx:IsA("ParticleEmitter") then
+					fx.Enabled = on
+				elseif fx:IsA("Sound") then
+					fx.TimePosition = 0
+					fx.Playing = on
+				end
+			end
+		end
+
+
+	end
+end
 
 ----------------------------methods (customizable)---------------------------------------------
 
 
-
-
+--- turns on all emitters named to "Launch"
 function Missile.LaunchFX(self: Missile)
-	local burnSFX = self.main:FindFirstChild("BurnSFX") :: Sound
-	local fireVFX = self.object:FindFirstChild("ThrustEmitter"):FindFirstChild("Fire") :: ParticleEmitter
-	local smokeVFX = self.object:FindFirstChild("ThrustEmitter"):FindFirstChild("Smoke") :: ParticleEmitter 
-	burnSFX:Play()
-	fireVFX.Enabled = true
-	smokeVFX.Enabled = true
+	self:FX({"Launch"},true)
 end
 
---one iteration of missile logic
+--- run one update of missile logic, where:
+--- - the target is adjusted to the WorldPosition of self.att
+--- - the intercept algo is ran to get the next CFrame for the mover
+--- - the movers are updated
+--- - information about this update is cached in lastPos, lastTick, lastTarget for use in the next update
 function Missile.Run(self: Missile)
 	if not self.active then return end
 	--grab flight data n stuff
@@ -281,7 +306,7 @@ function Missile.Run(self: Missile)
 	end
 
 	--figure out the new target to point to
-	local newTarget, timeToTarget = self:PredictIntercept()
+	local newTarget, _timeToTarget = self:PredictIntercept()
 	local directionToTarget = (newTarget - self.main.Position).Unit
 	local finalTarget = Vector3.new(self.main.Position.X + directionToTarget.X * FORWARD_TRACK, self:GetDesiredAltitude(progress),self.main.Position.Z + directionToTarget.Z * FORWARD_TRACK)
 	newTarget = finalTarget
@@ -296,6 +321,7 @@ function Missile.Run(self: Missile)
 	self.lastTarget = self.target
 end
 
+--- make the missile explode based off the params
 function Missile.Explode(self:Missile)
 	self.main.Anchored = true
 	for i,v in pairs(self.object:GetDescendants()) do
@@ -305,20 +331,32 @@ function Missile.Explode(self:Missile)
 	end
 end
 
-
+--- destroy all movers and disconnect connections, causing the missile to appear inert, but does not destroy the objct
 function Missile.Abort(self: Missile)
 	self.active = false
 
-	for i,v in pairs(self.object:GetDescendants()) do
+	for _,v in pairs(self.connections) do
+		v:Disconnect()
+	end
+
+	for _,v in pairs(self.object:GetDescendants()) do
 		if v:IsA("BasePart") then
 			v.CanCollide = true
 		end
 	end
-	task.wait(5)
-	--self:Destroy()
 end
 
+function Missile.Destroy(self: Missile)
+	self:Abort()
+	self.object:Destroy()
+	if self.att then 
+		self.att:Destroy() 
+	end
+end
 
+--- handles missile replication given two snapshots (to and from)
+--- @param from MissileSnapshot - the earlier snapshot
+--- @param to MissileSnapshot - the later snapshot 
 function Missile.Interp(self: Missile, from: Types.MissileSnapshot, to: Types.MissileSnapshot, delta: number)
 	TS:Create(self.main,TweenInfo.new(delta,Enum.EasingStyle.Linear),{CFrame = to.cf}):Play()
 	if from.active ~= to.active and to.active == true then

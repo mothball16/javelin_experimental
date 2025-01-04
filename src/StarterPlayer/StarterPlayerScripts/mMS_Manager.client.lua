@@ -1,7 +1,7 @@
 --!strict
 
 --[[
-This script is used receive and carry out any actions that need to persist after the tool is unequipped (e.g. shooting a missile)
+This script is used receive and carry out any actions that need to continue after the tool is unequipped (e.g. shooting a missile)
 Originally this was literally the only purpose of the script but after making just that one task I was like "I need to add at least 3 more things to this"
 
 
@@ -17,41 +17,79 @@ local RS = game:GetService("ReplicatedStorage")
 local RUS = game:GetService("RunService")
 local Packages = RS:WaitForChild("Packages")
 local Knit = require(Packages:WaitForChild("Knit"))
+local MissileController = Knit.GetController("MissileController")
 --remote stuff
 local mMS_RS = game.ReplicatedStorage:WaitForChild("mMS_RS")
 
 local Modules = mMS_RS:WaitForChild("Modules")
+local Systems = mMS_RS:WaitForChild("Systems")
 
-local Missile = require(Modules:WaitForChild("Missile"))
+local Types = require(Modules:WaitForChild("Types")
 
 --plr references
 local player = game.Players.LocalPlayer
-local char = player.Character or player.CharacterAdded:Wait()
+local char: Instance = player.Character or player.CharacterAdded:Wait()
 
 --current tool
-local system
+local system: Types.MissileSystem?
 
-char.ChildAdded:Connect(function(child)
+
+--- sets up and connects the newly loaded system
+--- @param newSys: Types.MissileSystem - the system to load in
+local function SetupSystem(newSys: Types.MissileSystem)
+	--since we know a new system is now being introduced, clean out the current system
+	if system then
+		system.Cleanup()
+		system = nil
+	end
+	newSys.Setup()
+
+	--connect the signal to do literally the only thing this script was meant to do
+	newSys.OnFire:Connect(function(fields: Types.MissileFields)
+		MissileController:RegisterMissile(fields)
+	end)
+	system = newSys
+
+end
+
+
+char.ChildAdded:Connect(function(child: Instance)
 	--if system then
 	
-	
-	local toRequire = child:GetAttribute("mothballMissileSystem")
-	if not toRequire then 
-		return
-	elseif toRequire == "" then 
-		toRequire = child.Name 
+	--check if the child added was a seatweld -- if so, grab the seat, if not
+	if child:IsA("Weld") or child:IsA("WeldConstraint") then
+		if child.Part0 and child.Part0:IsA("Seat") then
+			child = child.Part0
+		elseif child.Part1 and child.Part1:IsA("Seat") then
+			child = child.Part1
+		else return end
 	end
-	
---	if toRequire
-	
+
+
+	--check if the child has the identification for missile system
+	local toRequire = child:GetAttribute("mothballMissileSystem")
+	if not toRequire then return end
+
+
+	--bum way to circumvent unknown path false error ( Bad code jumpscare !! )
+	local newSys: any = Systems:FindFirstChild(toRequire == "" and child.Name or toRequire)
+	if not newSys then return end
+	newSys = require(newSys) :: any
+	newSys.object = child
+
+	SetupSystem(newSys :: Types.MissileSystem)
+end)
+
+char.ChildRemoved:Connect(function()
 	
 end)
+
 
 --[[
 UIS.InputBegan:Connect(function(input,chatting)
 	if not chatting then
 		if input.UserInputType == Enum.UserInputType.MouseButton1 and isLocked then
-			local MRC = Knit.GetController("MissileReplController")
+			local MRC = Knit.GetController("MissileController")
 			local passAtt = lockAtt:Clone()
 			passAtt.Parent = lockAtt.Parent
 			local data = {

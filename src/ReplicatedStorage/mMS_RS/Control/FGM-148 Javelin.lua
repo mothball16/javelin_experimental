@@ -113,7 +113,7 @@ end)
 UIS.InputBegan:Connect(function(input,chatting)
 	if not chatting then
 		if input.UserInputType == Enum.UserInputType.MouseButton1 and isLocked then
-			local MRC = Knit.GetController("MissileReplController")
+			local MRC = Knit.GetController("MissileController")
 			local passAtt = lockAtt:Clone()
 			passAtt.Parent = lockAtt.Parent
 			local data = {
