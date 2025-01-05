@@ -1,19 +1,13 @@
 --!strict
 local RS = game:GetService("ReplicatedStorage")
 local Packages = RS:WaitForChild("Packages")
-local React = require(Packages.ReactLua.React)
+local React = require(Packages.ReactLua)
 local CLUFolder = script.Parent
 local CLUIndicator = require(CLUFolder:WaitForChild("Indicator"))
 local Signal = require(Packages.Signal)
 local BORDER_COLOR = Color3.fromRGB(0,0,0)
 
-local function tableMerge(t1, t2): {any}
-	local nt = table.clone(t1)
-	for _, v in pairs(t2) do
-		table.insert(nt,v)
-	end
-	return nt
-end
+
 --defined params to fix type checking bug (Maybe this is a good practice too Ion know)
 local function CLUOptic(props: {
 	indicators: {[string]: {image: string, state: boolean}},
@@ -71,11 +65,10 @@ local function CLUOptic(props: {
 	React.useEffect(function()
 		local connection = props.updateSignal:Connect(function(newState)
 			print("reached!")
-			
 			local updateState = table.clone(state)
 			for k, v in pairs(newState) do
 				if updateState[k] then
-					updateState[k][state] = v.state
+					updateState[k][state] = v
 				end
 			end
 			setState(updateState)

@@ -4,7 +4,7 @@ No state needs to be maintained, this is just to make the thing light up.
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local React = require(ReplicatedStorage.Packages.ReactLua.React)
+local React = require(ReplicatedStorage.Packages.ReactLua)
 
 local function Indicator(props)
 	props.on = props.on or 0

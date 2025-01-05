@@ -12,6 +12,7 @@ local Types = require(script.Parent.Types)
 Missile.__index = Missile
 
 
+
 --i gave up having every type in the Types file for not having to maintain a separate methods type
 type self = {
 	target: Vector3,		-- the position of the target/to be sent updates by the launcher
