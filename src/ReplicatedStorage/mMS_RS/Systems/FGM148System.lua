@@ -71,28 +71,31 @@ end
 
 function FGM148System.Setup(self: FGM148System)
     -- set up the CLU
-    self.root = ReactRoblox.createRoot(PGui)
-    local sgui = Instance.new("ScreenGui")
-    sgui.Parent = PGui
-    sgui.Name = "LockGUI"
-    sgui.IgnoreGuiInset = true
-    self.clu = sgui
-    self.root:render(
-        React.createElement("ScreenGui",{
-            Name = "CLUOptic",
-            IgnoreGuiInset = true,
-        },{
-            System = React.createElement(CLUOptic,{
-                indicators = self.indicators,
-                updateSignal = self.UpdateState
-            })
-        })
-    )
+    
 
+    local root = ReactRoblox.createRoot(Instance.new("Folder"))
+    root:render(ReactRoblox.createPortal(React.createElement(
+        "ScreenGui",{
+            IgnoreGuiInset = true
+        },{
+            React.createElement(CLUOptic,
+            {
+                indicators = self.indicators,
+                updateSignal = self.UpdateState 
+            })
+        }),PGui))
+    
+
+
+
+
+    
     coroutine.resume(coroutine.create(function()
         while true do
             task.wait(0.5)
+            local key = next(INDICATOR_DEFAULTS)
             self.locker.UpdateLock:Fire(math.random())
+            self.UpdateState:Fire({[key] = (math.random() > 0.5 and true or false)})
         end
     end))
 end

@@ -1,10 +1,32 @@
 --!strict
---use-motion.lua
+-- hook to get ripple to work in regular lua
+
+--[[
+info for self:
+
+	interface SpringOptions {
+		readonly damping?: number;
+		readonly frequency?: number;
+		readonly mass?: number;
+		readonly tension?: number;
+		readonly friction?: number;
+		readonly position?: number;
+		readonly velocity?: number;
+		readonly impulse?: number;
+		readonly restingVelocity?: number;
+		readonly restingPosition?: number;
+	}
+
+
+]]
+
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local react = require(ReplicatedStorage.Packages.ReactLua)
 local ripple = require(ReplicatedStorage.Packages.Ripple)
+
+
 
 function useMotion<T>(initialValue: T)
     local motion = react.useMemo(function()

@@ -9,8 +9,8 @@ local mMS_RS = RS:WaitForChild("mMS_RS")
 local Packages = RS:WaitForChild("Packages")
 local Components = mMS_RS:WaitForChild("Components")
 local Signal = require(Packages:WaitForChild("Signal"))
-local React = require(Packages:WaitForChild("ReactLua"):WaitForChild("React"))
-local ReactRoblox = require(Packages:WaitForChild("ReactLua"):WaitForChild("ReactRoblox"))
+local React = require(Packages:WaitForChild("ReactLua"))
+local ReactRoblox = require(Packages:WaitForChild("ReactRoblox"))
 local LockVisual = require(Components:WaitForChild("FFOSys"):WaitForChild("LockVisual"))
 
 --------------------------------------------------------------------------
@@ -45,22 +45,16 @@ function TargetLocker.new()
     self.UpdateLock = Signal.new()
 
     --set up the React interface
-    self.root = ReactRoblox.createRoot(PGui)
-    local sgui = Instance.new("ScreenGui")
-    sgui.Parent = PGui
-    sgui.Name = "LockGUI"
-    sgui.IgnoreGuiInset = true
-    self.interface = sgui
-    self.root:render(
-        React.createElement("ScreenGui",{
-            Name = "LockGUI",
-            IgnoreGuiInset = true,
-        },{
-            System = React.createElement(LockVisual,{
+    self.root = ReactRoblox.createRoot(Instance.new("Folder",PGui))
+    self.root:render(ReactRoblox.createPortal(React.createElement(
+        "ScreenGui",{
+            IgnoreGuiInset = true
+        },{ 
+            React.createElement(LockVisual,
+            {
                 updateSignal = self.UpdateLock
             })
-        })
-    )
+    }),PGui))
     return self
 end
 

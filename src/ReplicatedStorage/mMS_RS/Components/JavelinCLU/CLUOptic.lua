@@ -56,7 +56,7 @@ local function CLUOptic(props: {
 		children[k] = React.createElement(CLUIndicator,{
 			Name = k,
 			image = v.image,
-			visible = true,
+			visible = state[k].state,
 			on = 0,
 			off = 0.9,
 		})
@@ -64,11 +64,10 @@ local function CLUOptic(props: {
 	
 	React.useEffect(function()
 		local connection = props.updateSignal:Connect(function(newState)
-			print("reached!")
 			local updateState = table.clone(state)
 			for k, v in pairs(newState) do
 				if updateState[k] then
-					updateState[k][state] = v
+					updateState[k].state = v
 				end
 			end
 			setState(updateState)

@@ -1944,6 +1944,7 @@ local HooksDispatcherOnMount: Dispatcher = {
 	useBinding = mountBinding,
 	useState = mountState,
 	useDebugValue = mountDebugValue,
+	
 	-- useDeferredValue = mountDeferredValue,
 	-- useTransition = mountTransition,
 	useMutableSource = mountMutableSource,
