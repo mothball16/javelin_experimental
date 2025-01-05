@@ -80,6 +80,7 @@ function WeaponComponent:Toggle(on: boolean)
 	
 end
 
+-- Parent the component to the model and toggle visibility
 function WeaponComponent:Attach(handle: BasePart)
 	local tool = handle.Parent :: Model | Tool
 	self.model.Parent = tool:FindFirstChild("Components") or tool

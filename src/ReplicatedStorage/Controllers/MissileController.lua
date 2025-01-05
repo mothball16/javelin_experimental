@@ -30,7 +30,6 @@ function MissileController:KnitStart()
 	local function HandleRegister(data: Types.MissileReplData, snapshot: Types.MissileSnapshot)
 		local missile = Missile.new(data.fields)
 		missile.main.Anchored = true
-		local updateData = MissileUpdates[data.identifier]
 		MissileUpdates[data.identifier] = {
 			main = missile,
 			from = snapshot,

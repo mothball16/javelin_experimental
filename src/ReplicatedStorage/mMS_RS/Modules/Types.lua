@@ -66,9 +66,9 @@ export type MissileSnapshot = {
 export type MissileSystem = {
 	object: Instance,
 	state: Folder,
-	Setup: () -> (),
+	Setup: (self: MissileSystem) -> (),
 	--When object is ready to go
-	Cleanup: () -> (),
+	Cleanup: (self: MissileSystem) -> (),
 	--Send to the manager to keep missile after system is cleaned up
 	OnFire: Signal.Signal<MissileFields>
 }

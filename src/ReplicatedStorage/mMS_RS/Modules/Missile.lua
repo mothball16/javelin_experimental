@@ -43,8 +43,8 @@ export type Missile = typeof(setmetatable({} :: self, Missile))
 local PEAK_CALC_THETA = 60
 local PHASE_BREAKPOINT = 0.25
 local PREDICTION_CONFIDENCE = 0.02
-local BUFFER_MIN = 0.05
-local BUFFER_MAX = 0.25
+--local BUFFER_MIN = 0.05
+--local BUFFER_MAX = 0.25
 local FORWARD_TRACK = 50
 -------------------------------------------------------------------
 
@@ -52,9 +52,7 @@ local FORWARD_TRACK = 50
 local mMS_RS = game.ReplicatedStorage:WaitForChild("mMS_RS")
 local RunService = game:GetService("RunService")
 
-local Events = mMS_RS:WaitForChild("Events")
 local Models = mMS_RS:WaitForChild("Models")
-local Modules = mMS_RS:WaitForChild("Modules")
 local Missiles = mMS_RS:WaitForChild("Missiles")
 local ConfigDefaults = require(Missiles:WaitForChild("Configs"):WaitForChild("Defaults"))
 -------------------------------------------------------------------
@@ -125,7 +123,10 @@ function Missile.Snapshot(self: Missile): Types.MissileSnapshot
 	}
 end
 
---add missile functionality (isn't called for replicated missiles)
+
+
+
+--- add missile functionality (isn't called for replicated missiles)
 function Missile.Init(self: Missile)
 	assert(self.fields.initSpeed :: number, "initSpeed not defined.")
 	--set up the movers
@@ -184,7 +185,9 @@ function Missile.Init(self: Missile)
 end
 
 
---get distance ignoring altitude
+--- get distance ignoring altitude
+--- @param origin Vector3 - the given origin, or the origin the missile departed from (default)
+--- @param target Vector3 - the given destination, or the current target position (default)
 function Missile.GetDist(self: Missile,origin: Vector3?, target: Vector3?): number
 	origin = origin or self.fields.origin
 	target = target or self.target
@@ -192,13 +195,14 @@ function Missile.GetDist(self: Missile,origin: Vector3?, target: Vector3?): numb
 	return ((origin - target) * Vector3.new(1,0,1)).Magnitude
 end
 
---get distance from 0 to 1 based off missile distance to target, as compared to from the origin to target
+--- get distance from 0 to 1 based off missile distance to target, as compared to from the origin to target
 function Missile.GetDistNormalized(self:Missile): number
 	return 1 - math.clamp(self:GetDist(self.main.Position,nil)/self:GetDist(),0,1)
 end
 
 
---predict the position of the target at point of impact
+--- predict the position of the target at point of impact
+--- @return Vector3, number
 function Missile.PredictIntercept(self: Missile): (Vector3, number)
 	assert(self.fields.iterations and self.fields.maxSpeed and self.fields.accel, "iterations/maxSpeed/accel not defined.")
 	
@@ -230,6 +234,7 @@ end
 
 --- modeled after https://www.desmos.com/calculator/l2kb4axhr4
 --- @param progress number - number between 0 and 1 as to the X value in the desmos graph
+--- @return number
 function Missile.GetDesiredAltitude(self: Missile, progress: number): number
 	assert(self.fields.peak :: number, "self.fields.peak isn't a number?")
 
@@ -242,7 +247,8 @@ function Missile.GetDesiredAltitude(self: Missile, progress: number): number
 end
 
 
---update the movers to point and move in the given direction (I suck at Physics !!)
+--- update the movers to point and move in the given direction (I suck at Physics !!)
+--- @param dir CFrame - direction to point the missile towards. mainVel will take the lookvector * speed, mainRot will point to dir
 function Missile.UpdateForces(self: Missile, dir: CFrame?)
 
 	assert(self.fields.power,"power is null?")
@@ -346,6 +352,7 @@ function Missile.Abort(self: Missile)
 	end
 end
 
+--- calls self:Abort() and then destroys any physical instances
 function Missile.Destroy(self: Missile)
 	self:Abort()
 	self.object:Destroy()
@@ -363,6 +370,8 @@ function Missile.Interp(self: Missile, from: Types.MissileSnapshot, to: Types.Mi
 		self:LaunchFX()
 	end
 end
+
+
 --[[
 function Missile:Destroy()
 	if self.Connection then self.Connection:Disconnect() end
