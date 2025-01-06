@@ -1,3 +1,5 @@
+
+
 local tool = script.Parent.Parent
 local prompt = tool.Missile.Main.Action
 local isLoaded = tool.IsLoaded
@@ -87,6 +89,7 @@ prompt.Triggered:Connect(function()
 			end
 		end
 	end
+	
 end)
 
 prompt.PromptButtonHoldBegan:Connect(function()
@@ -98,3 +101,5 @@ end)
 prompt.TriggerEnded:Connect(function()
 	loadingMissile = nil
 end)
+
+

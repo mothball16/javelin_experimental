@@ -1,26 +1,27 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local React = require(ReplicatedStorage.Packages.ReactLua)
 local UseMotion = require(ReplicatedStorage.mMS_RS.Modules.UseMotion)
+local e = React.createElement
 local function LockVisual(props)
     local lockPercent, setLockPercent = React.useState(0)
-    local lockSpring, lockMotor = UseMotion(0)
+    local scale, scaleMotor = UseMotion(0)
     local function createCornerEdge(anchor: Vector2, pos: UDim2)
-        return React.createElement(
+        return e(
             React.Fragment,
             nil,
-            React.createElement("Frame", {
+            e("Frame", {
                 Position = pos,
                 AnchorPoint = anchor,
                 BackgroundColor3 = Color3.new(1, 1, 1),
                 BorderSizePixel = 0,
-                Size = UDim2.new(0,1,lockSpring/2,0),
+                Size = scale:map(function(v) return UDim2.new(0,1,v/2,0) end),
             }),
-            React.createElement("Frame", {
+            e("Frame", {
                 Position = pos,
                 AnchorPoint = anchor,
                 BackgroundColor3 = Color3.new(1, 1, 1),
                 BorderSizePixel = 0,
-                Size = UDim2.new(lockSpring/2,0,0,1),
+                Size = scale:map(function(v) return UDim2.new(v/2,0,0,1) end),
             })
         ) 
     end
@@ -37,7 +38,8 @@ local function LockVisual(props)
        
     React.useEffect(function()
         local connection = props.updateSignal:Connect(setLockPercent)
-        lockMotor:spring(lockPercent:getValue(), {
+
+        scaleMotor:spring(lockPercent, {
 			damping = 0.7,
             mass = 0.1,
 		})
@@ -46,7 +48,7 @@ local function LockVisual(props)
         end
     end)
     
-    return React.createElement("Frame",{
+    return e("Frame",{
         Name = "LockFrame",
         BackgroundTransparency = 1,
         Position = UDim2.fromScale(0.5, 0.5),

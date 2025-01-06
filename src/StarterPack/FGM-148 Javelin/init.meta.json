@@ -1,4 +1,7 @@
 {
-  "className": "Tool",
-  "ignoreUnknownInstances": true
+  "ignoreUnknownInstances": true,
+  "attributes": {
+    "mothballMissileSystem": "FGM148System"
+  },
+  "className": "Tool"
 }

@@ -1,4 +1,27 @@
 {
-  "className": "Part",
-  "ignoreUnknownInstances": true
+  "ignoreUnknownInstances": true,
+  "properties": {
+    "BottomSurface": "Smooth",
+    "CFrame": [
+      -435.25,
+      12.25,
+      -72.75,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "Size": [
+      30.5,
+      24.5,
+      34.5
+    ],
+    "TopSurface": "Smooth"
+  },
+  "className": "Part"
 }

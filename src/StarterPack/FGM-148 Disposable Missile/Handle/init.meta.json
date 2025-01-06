@@ -1,4 +1,37 @@
 {
-  "className": "Part",
-  "ignoreUnknownInstances": true
+  "ignoreUnknownInstances": true,
+  "properties": {
+    "BottomSurface": "Smooth",
+    "CFrame": [
+      58.67398452758789,
+      1.658859372138977,
+      133.58546447753906,
+      1.0,
+      -8.138235330079624e-7,
+      -2.2957701517611895e-8,
+      2.29554970587742e-8,
+      -2.7119929200125625e-6,
+      1.0,
+      -8.138235330079624e-7,
+      -1.0,
+      -2.7119929200125625e-6
+    ],
+    "EnableFluidForces": false,
+    "Size": [
+      0.0010000000474974513,
+      0.0010000000474974513,
+      0.0010000000474974513
+    ],
+    "TopSurface": "Smooth",
+    "Transparency": 1.0,
+    "Velocity": [
+      0.0,
+      0.000019572678866097704,
+      0.0
+    ]
+  },
+  "attributes": {
+    "Rojo_Id": "4e91678d213a29030783541400005358"
+  },
+  "className": "Part"
 }

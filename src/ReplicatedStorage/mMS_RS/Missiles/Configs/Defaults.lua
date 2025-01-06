@@ -14,4 +14,5 @@ local module: Types.MissileConfig = {
 	initSpeed = 20,
 	power = 500,
 } 
+
 return module

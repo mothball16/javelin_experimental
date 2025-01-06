@@ -17,7 +17,10 @@ local TargetLocker = require(Systems:WaitForChild("TargetLocker"))
 local HandheldBase = require(Systems:WaitForChild("HandheldBase"))
 local Signal = require(Packages:WaitForChild("Signal"))
 local CLUOptic = require(Components:WaitForChild("JavelinCLU"):WaitForChild("CLUOptic"))
+local e = React.createElement
+local WeaponComponent = require(Modules.WeaponComponent)
 ----------------------------------------------------------------
+local C_PATH = mMS_RS.Models.JavelinParts
 local INDICATOR_DEFAULTS =  {
     ["BCU+"] =      {image = "rbxassetid://89722159180463", state = false},
     ["CLU"] =       {image = "http://www.roblox.com/asset/?id=99363953262967", state = false},
@@ -34,8 +37,12 @@ local INDICATOR_DEFAULTS =  {
     ["TOP"] =       {image = "rbxassetid://81416663556280", state = true},
     ["WFOV"] =      {image = "rbxassetid://97724947789086", state = true},
 }
+
 local plr = game.Players.LocalPlayer
+local char = plr.Character or plr.CharacterAdded:Wait()
 local PGui = plr.PlayerGui
+local cam = game.Workspace.CurrentCamera
+
 ----------------------------------------------------------------
 
 
@@ -45,40 +52,72 @@ FGM148System.__index = FGM148System
 
 type self = {
     locker: TargetLocker.TargetLocker,
+    rayParams: RaycastParams,
     indicators: {[string]: {image: string, state: boolean}},
     root: any,
     clu: ScreenGui,
-    UpdateState: Signal.Signal<any>
+    UpdateState: Signal.Signal<any>,
+    state: Folder,
+    
 }
 
 export type FGM148System = typeof(setmetatable({} :: self, FGM148System)) & HandheldBase.HandheldBase
 
+
+
+--- initialize object and set up self. 
 function FGM148System.new(args: {
     object: Model,
 }): FGM148System
-
     local self = setmetatable(HandheldBase.new({
         object = args.object,
         state = args.object:FindFirstChild("mMS_State") :: Folder
     }) :: FGM148System, FGM148System)
+    local handle: BasePart = args.object:FindFirstChild("Handle") :: BasePart
     
     self.locker = TargetLocker.new()
     self.UpdateState = Signal.new()
     self.indicators = table.clone(INDICATOR_DEFAULTS)
-    
+
+    -- set up ray params: should ignore self and launcher
+    self.rayParams = RaycastParams.new()
+    self.rayParams.FilterDescendantsInstances = {char, self.object}
+    self.rayParams.FilterType = Enum.RaycastFilterType.Exclude
+
+    self.components = {
+        ["CLU"] = WeaponComponent.new({
+            model = C_PATH:FindFirstChild("CLU"),
+            attach = handle,
+            attached = true,
+        }),
+        ["Housing"] = WeaponComponent.new({
+            model = C_PATH:FindFirstChild("Housing"),
+            attach = handle,
+            attached = true,
+            children = {
+                {
+                    model = "Warhead",
+                    attached = false
+                }
+            }
+        })
+    }
+    print(self.components["Housing"]:GetTree())
+
     return self
 end
 
+
+
+--- set up connections to create functionality
 function FGM148System.Setup(self: FGM148System)
     -- set up the CLU
-    
-
-    local root = ReactRoblox.createRoot(Instance.new("Folder"))
-    root:render(ReactRoblox.createPortal(React.createElement(
+    self.root = ReactRoblox.createRoot(Instance.new("Folder"))
+    self.root:render(ReactRoblox.createPortal(e(
         "ScreenGui",{
             IgnoreGuiInset = true
         },{
-            React.createElement(CLUOptic,
+            e(CLUOptic,
             {
                 indicators = self.indicators,
                 updateSignal = self.UpdateState 
@@ -102,7 +141,8 @@ end
 
 function FGM148System.Cleanup(self: FGM148System)
     self.root:unmount()
-    self.clu:Destroy()
+  
+    --self.clu:Destroy()
 end
 
 

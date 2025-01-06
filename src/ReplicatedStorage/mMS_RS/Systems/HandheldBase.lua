@@ -4,13 +4,14 @@
 this script is the boilerplate for any tool-based missile launchers. It provides a constructor ( And thats basically it cause tools vary greatly )
 ]]
 
+
 local RS = game:GetService("ReplicatedStorage")
 local Packages = RS:WaitForChild("Packages")
 local mMS_RS = game.ReplicatedStorage:WaitForChild("mMS_RS")
 local Modules = mMS_RS:WaitForChild("Modules")
 local Types = require(Modules:WaitForChild("Types"))
 local Signal = require(Packages:WaitForChild("Signal"))
-
+local WeaponComponent = require(Modules:WaitForChild("WeaponComponent"))
 ----------------------------------------------------------------
 local STATE_NAME = "mMS_State"
 
@@ -19,7 +20,9 @@ local STATE_NAME = "mMS_State"
 local HandheldBase = {}
 HandheldBase.__index = HandheldBase
 
-type self = {}
+type self = {
+    components: {[string]: WeaponComponent.WeaponComponent},
+}
 
 export type HandheldBase = typeof(setmetatable({} :: self, HandheldBase)) & Types.MissileSystem
 
@@ -37,6 +40,13 @@ function HandheldBase.new(args: {
     local _state = args.state or args.object:FindFirstChild(STATE_NAME)
     assert(_state and _state:IsA("Folder"), "state doesn't exist for HandheldBase of type " .. self.object.Name)
     
+    -- create a components folder if not already made
+    if not self.object:FindFirstChild("CFolder") then
+        local f = Instance.new("Folder")
+        f.Name = "CFolder"
+        f.Parent = self.object
+    end
+
     self.state = _state
     return self
 end

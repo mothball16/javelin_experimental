@@ -73,6 +73,16 @@ export type MissileSystem = {
 	OnFire: Signal.Signal<MissileFields>
 }
 
-
+--template for creating a WeaponComponent inside children args (some fields are redundant)
+export type WeaponComponentPartial = {
+	model: Model | string,
+	slot: string?,
+	children: {WeaponComponentPartial}?,
+	attached: boolean?
+}
+--anything else needed to create a WeaponComponent from scratch
+export type WeaponComponentConfig = {
+	attach: BasePart,
+} & WeaponComponentPartial
 
 return module

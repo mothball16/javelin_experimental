@@ -24,10 +24,49 @@
         "$ignoreUnknownInstances": true,
         "$path": "src/StarterPlayer/StarterPlayerScripts"
       },
+      "$properties": {
+        "CameraMaxZoomDistance": 128.0,
+        "CharacterUseJumpPower": false
+      },
       "$ignoreUnknownInstances": true
     },
     "Workspace": {
       "$className": "Workspace",
+      "$properties": {
+        "SignalBehavior": "Deferred",
+        "StreamOutBehavior": "Opportunistic",
+        "StreamingEnabled": true,
+        "StreamingIntegrityMode": "PauseOutsideLoadedArea",
+        "WorldPivotData": {
+          "OptionalCFrame": {
+            "position": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "orientation": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ]
+          }
+        }
+      },
+      "$attributes": {
+        "Rojo_Target_CurrentCamera": "42af130c68d34d14078bb45f000120ce"
+      },
       "$ignoreUnknownInstances": true,
       "$path": "src/Workspace"
     }

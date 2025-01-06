@@ -1,12 +1,16 @@
 local Welder = {}
 
---- simple func to weld one part to another
-function Welder:Weld(p1: BasePart, p2: BasePart)
+--- simple func to weld one part to another.
+--- @param p1 BasePart: The origin part. NOTE: The weld will be parented here
+--- @param p2 BasePart: The target part. 
+--- @return WeldConstraint
+function Welder:Weld(p1: BasePart, p2: BasePart): WeldConstraint
 	local weld = Instance.new("WeldConstraint")
 	weld.Name = p1.Name .. "Weld"
 	weld.Part0 = p1
 	weld.Part1 = p2
 	weld.Parent = p1
+	return weld
 end
 
 function Welder:WeldM(model)
