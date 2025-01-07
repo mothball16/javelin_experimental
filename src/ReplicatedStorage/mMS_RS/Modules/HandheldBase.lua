@@ -6,12 +6,12 @@ this script is the boilerplate for any tool-based missile launchers. It provides
 
 
 local RS = game:GetService("ReplicatedStorage")
-local Packages = RS:WaitForChild("Packages")
-local mMS_RS = game.ReplicatedStorage:WaitForChild("mMS_RS")
+local mMS_RS = RS:WaitForChild("mMS_RS")
+local Packages = mMS_RS:WaitForChild("Packages")
 local Modules = mMS_RS:WaitForChild("Modules")
 local Types = require(Modules:WaitForChild("Types"))
 local Signal = require(Packages:WaitForChild("Signal"))
-local WeaponComponent = require(Modules:WaitForChild("WeaponComponent"))
+local Maid = require(Modules:WaitForChild("Maid"))
 ----------------------------------------------------------------
 local STATE_NAME = "mMS_State"
 
@@ -20,9 +20,7 @@ local STATE_NAME = "mMS_State"
 local HandheldBase = {}
 HandheldBase.__index = HandheldBase
 
-type self = {
-    components: {[string]: WeaponComponent.WeaponComponent},
-}
+type self = {}
 
 export type HandheldBase = typeof(setmetatable({} :: self, HandheldBase)) & Types.MissileSystem
 
@@ -32,7 +30,10 @@ function HandheldBase.new(args: {
 }): HandheldBase
 
     local self = setmetatable({} :: HandheldBase, HandheldBase)
+    self._maid = Maid.new()
     self.OnFire = Signal.new()
+    self._maid:GiveTask(self.OnFire)
+
     self.object = args.object
 
 
@@ -40,13 +41,6 @@ function HandheldBase.new(args: {
     local _state = args.state or args.object:FindFirstChild(STATE_NAME)
     assert(_state and _state:IsA("Folder"), "state doesn't exist for HandheldBase of type " .. self.object.Name)
     
-    -- create a components folder if not already made
-    if not self.object:FindFirstChild("CFolder") then
-        local f = Instance.new("Folder")
-        f.Name = "CFolder"
-        f.Parent = self.object
-    end
-
     self.state = _state
     return self
 end
@@ -59,7 +53,7 @@ function HandheldBase.Setup(self: HandheldBase)
 end
 
 --- this should remove anything that shouldn't be here after the tool is unequipped (ui, connections, etc)
-function HandheldBase.Cleanup(self: HandheldBase)
+function HandheldBase.Destroy(self: HandheldBase)
     warn("HandheldBase.Cleanup should have a custom implementation")
 end
 

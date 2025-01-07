@@ -5,7 +5,7 @@ No state needs to be maintained, this is just to make the thing light up.
 
 local RS = game:GetService("ReplicatedStorage")
 local mMS_RS = RS:WaitForChild("mMS_RS")
-local React = require(RS.Packages.ReactLua)
+local React = require(mMS_RS.Packages.ReactLua)
 local UseMotion = require(mMS_RS.Modules.UseMotion)
 
 

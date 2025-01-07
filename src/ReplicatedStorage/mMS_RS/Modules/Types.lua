@@ -2,8 +2,13 @@
 
 local module = {}
 local RS = game:GetService("ReplicatedStorage")
-local Packages = RS:WaitForChild("Packages")
+local mMS_RS = RS:WaitForChild("mMS_RS")
+local Modules = mMS_RS:WaitForChild("Modules")
+local Packages = mMS_RS:WaitForChild("Packages")
 local Signal = require(Packages:WaitForChild("Signal"))
+local Maid = require(Modules:WaitForChild("Maid"))
+
+
 
 --static data not relevant to customization plus the missile config
 export type MissileFields = MissileConfig & {
@@ -19,6 +24,8 @@ export type MissileFields = MissileConfig & {
 	att: Attachment?,
 	--GUID for missile registry
 	identifier: string?,
+	--Unpaid intern
+	_maid: Maid.Maid,
 }
 
 
@@ -66,23 +73,34 @@ export type MissileSnapshot = {
 export type MissileSystem = {
 	object: Instance,
 	state: Folder,
+	_maid: Maid.Maid,
+
 	Setup: (self: MissileSystem) -> (),
 	--When object is ready to go
-	Cleanup: (self: MissileSystem) -> (),
+	Destroy: (self: MissileSystem) -> (),
 	--Send to the manager to keep missile after system is cleaned up
 	OnFire: Signal.Signal<MissileFields>
 }
 
---template for creating a WeaponComponent inside children args (some fields are redundant)
-export type WeaponComponentPartial = {
-	model: Model | string,
-	slot: string?,
-	children: {WeaponComponentPartial}?,
-	attached: boolean?
+export type AttachableFields = AttachableConfig & {
+	model: Model,
+	_maid: Maid.Maid,
 }
---anything else needed to create a WeaponComponent from scratch
-export type WeaponComponentConfig = {
-	attach: BasePart,
-} & WeaponComponentPartial
+export type AttachableConfig = {
+	name: string?,
+	attachesTo: {string}?,
+	forms: {
+		Tool: boolean,
+		Dropped: boolean,
+		Embedded: boolean,
+	}?,		
+	dropOnUnequip: boolean?,
+
+	holdAnim: string?,
+	equipTime: number?,
+	dropTime: number?,
+	interactionDistance: number?,
+	interactionKey: Enum.KeyCode?,
+}
 
 return module

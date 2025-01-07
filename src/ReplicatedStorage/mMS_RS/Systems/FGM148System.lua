@@ -5,22 +5,21 @@
 ]]
 
 local RS = game:GetService("ReplicatedStorage")
-local Packages = RS:WaitForChild("Packages")
-local mMS_RS = game.ReplicatedStorage:WaitForChild("mMS_RS")
+local mMS_RS = RS:WaitForChild("mMS_RS")
+local Packages = mMS_RS:WaitForChild("Packages")
 local Modules = mMS_RS:WaitForChild("Modules")
-local Systems = mMS_RS:WaitForChild("Systems")
 local Components = mMS_RS:WaitForChild("Components")
 
 local React = require(Packages.ReactLua)
 local ReactRoblox = require(Packages.ReactRoblox)
-local TargetLocker = require(Systems:WaitForChild("TargetLocker"))
-local HandheldBase = require(Systems:WaitForChild("HandheldBase"))
+local TargetLocker = require(Modules:WaitForChild("TargetLocker"))
+local HandheldBase = require(Modules:WaitForChild("HandheldBase"))
 local Signal = require(Packages:WaitForChild("Signal"))
 local CLUOptic = require(Components:WaitForChild("JavelinCLU"):WaitForChild("CLUOptic"))
 local e = React.createElement
-local WeaponComponent = require(Modules.WeaponComponent)
+--local WeaponComponent = require(Modules.WeaponComponent)
 ----------------------------------------------------------------
-local C_PATH = mMS_RS.Models.JavelinParts
+
 local INDICATOR_DEFAULTS =  {
     ["BCU+"] =      {image = "rbxassetid://89722159180463", state = false},
     ["CLU"] =       {image = "http://www.roblox.com/asset/?id=99363953262967", state = false},
@@ -83,27 +82,13 @@ function FGM148System.new(args: {
     self.rayParams = RaycastParams.new()
     self.rayParams.FilterDescendantsInstances = {char, self.object}
     self.rayParams.FilterType = Enum.RaycastFilterType.Exclude
+    --if not self.object:GetAttribute("componentsLoaded") then
+      --  self.object:SetAttribute("componentsLoaded",true)
+   -- end
 
-    self.components = {
-        ["CLU"] = WeaponComponent.new({
-            model = C_PATH:FindFirstChild("CLU"),
-            attach = handle,
-            attached = true,
-        }),
-        ["Housing"] = WeaponComponent.new({
-            model = C_PATH:FindFirstChild("Housing"),
-            attach = handle,
-            attached = true,
-            children = {
-                {
-                    model = "Warhead",
-                    attached = false
-                }
-            }
-        })
-    }
-    print(self.components["Housing"]:GetTree())
-
+    self._maid:GiveTask(self.locker)
+    self._maid:GiveTask(self.UpdateState)
+    self._maid:GiveTask(self.object)
     return self
 end
 
@@ -124,11 +109,10 @@ function FGM148System.Setup(self: FGM148System)
             })
         }),PGui))
     
-
-
-
-
-    
+    self._maid:GiveTask(function()
+        self.root:unmount()
+    end)
+    --test code
     coroutine.resume(coroutine.create(function()
         while true do
             task.wait(0.5)
@@ -139,9 +123,8 @@ function FGM148System.Setup(self: FGM148System)
     end))
 end
 
-function FGM148System.Cleanup(self: FGM148System)
-    self.root:unmount()
-  
+function FGM148System.Destroy(self: FGM148System)
+    self._maid:DoCleaning()
     --self.clu:Destroy()
 end
 

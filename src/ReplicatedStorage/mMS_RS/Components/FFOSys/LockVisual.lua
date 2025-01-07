@@ -1,6 +1,8 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local React = require(ReplicatedStorage.Packages.ReactLua)
-local UseMotion = require(ReplicatedStorage.mMS_RS.Modules.UseMotion)
+local RS = game:GetService("ReplicatedStorage")
+local mMS_RS = RS:WaitForChild("mMS_RS")
+local React = require(mMS_RS.Packages.ReactLua)
+local UseMotion = require(mMS_RS.Modules.UseMotion)
+
 local e = React.createElement
 local function LockVisual(props)
     local lockPercent, setLockPercent = React.useState(0)

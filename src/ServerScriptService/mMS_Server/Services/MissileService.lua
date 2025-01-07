@@ -2,8 +2,8 @@
 
 local RS = game:GetService("ReplicatedStorage")
 local PS = game:GetService("Players")
-local Packages = RS:WaitForChild("Packages")
-local mMS_RS = game.ReplicatedStorage:WaitForChild("mMS_RS")
+local mMS_RS = RS:WaitForChild("mMS_RS")
+local Packages = mMS_RS:WaitForChild("Packages")
 local Modules = mMS_RS:WaitForChild("Modules")
 
 local Knit = require(Packages:WaitForChild("Knit"))

@@ -3,10 +3,7 @@
 
 local Missile = {}
 local HTTPS = game:GetService("HttpService")
-local RS = game:GetService("ReplicatedStorage")
 local TS = game:GetService("TweenService")
-local Packages = RS:WaitForChild("Packages")
-local Knit = require(Packages:WaitForChild("Knit"))
 local Types = require(script.Parent.Types)
 
 Missile.__index = Missile
@@ -49,25 +46,22 @@ local PREDICTION_CONFIDENCE = 0.02
 local FORWARD_TRACK = 50
 -------------------------------------------------------------------
 
-
-local mMS_RS = game.ReplicatedStorage:WaitForChild("mMS_RS")
 local RunService = game:GetService("RunService")
 
+local mMS_RS = game.ReplicatedStorage:WaitForChild("mMS_RS")
+local Modules = mMS_RS:WaitForChild("Modules")
 local Models = mMS_RS:WaitForChild("Models")
-local Missiles = mMS_RS:WaitForChild("Missiles")
-local ConfigDefaults = require(Missiles:WaitForChild("Configs"):WaitForChild("Defaults"))
+local ConfigDefaults = require(mMS_RS:WaitForChild("Configs"):WaitForChild("Missiles"):WaitForChild("Defaults"))
+local Maid = require(Modules:WaitForChild("Maid"))
 -------------------------------------------------------------------
 
-local function numLerp(a: number, b: number, t: number): number
-	return a + (b - a) * t
-end
-
-
-function Missile.new(fields: Types.MissileFields)	
+function Missile.new(fields: Types.MissileFields): Missile
 	local self = setmetatable({} :: self, Missile)
 	--set fields
 	self.fields = fields
 	self.fields.identifier = HTTPS:GenerateGUID()
+	self.fields._maid = Maid.new()
+
 	setmetatable(self.fields,{__index = ConfigDefaults})
 	
 	
@@ -101,6 +95,8 @@ function Missile.new(fields: Types.MissileFields)
 	assert(self.initVel and self.mainRot and self.mainVel, "something is missing: InitVel, MainVel, MainRot")
 	
 	
+
+
 	--sloppy function override
 	if self.fields.functions then
 		for k, v in pairs(self.fields.functions) do
@@ -113,6 +109,10 @@ function Missile.new(fields: Types.MissileFields)
 	--set up the object in the workspace
 	self.object.Parent = game.Workspace
 	self.object:PivotTo(self.fields.initOrient)
+	
+	--for cleanup
+	self.fields._maid:GiveTask(self.object)
+	self.fields._maid:GiveTask(self.att)
 	return self
 end
 
@@ -145,32 +145,34 @@ function Missile.Init(self: Missile)
 	coroutine.resume(coroutine.create(function()
 		assert(self.fields.maxSpeed and self.fields.accel, "maxSpeed/accel not defined")
 		task.wait(self.fields.initTime)
-		
-		
-		self.connections["accel"] = RunService.Heartbeat:Connect(function(dt)
+				
+		local RayParams = RaycastParams.new()
+		RayParams.FilterDescendantsInstances = {self.object}
+		RayParams.FilterType = Enum.RaycastFilterType.Exclude
+
+		--set up acceleration
+		self.fields._maid.accelCon = RunService.Heartbeat:Connect(function(dt)
+			if not self.active then self.fields._maid.updateConnection = nil end
 			self.speed = self.speed + (self.fields.accel * dt)
 			self:UpdateForces()
 			--break once max speed is reached (no more changes to speed)
 			if self.speed >= self.fields.maxSpeed then
 				self.speed = self.fields.maxSpeed
 				self:UpdateForces()
-				self.connections["accel"]:Disconnect()
+				self.fields._maid.accelCon = nil
 			end
 		end)
 		
-		
-		local RayParams = RaycastParams.new()
-		RayParams.FilterDescendantsInstances = {self.object}
-		RayParams.FilterType = Enum.RaycastFilterType.Exclude
-		
-		self.connections["cast"] = RunService.Heartbeat:Connect(function()
+
+		--set up Hit detection
+		self.fields._maid.castCon = RunService.Heartbeat:Connect(function()
 			local direction = (self.main.Position - self.lastPos).Unit
 			local mag = (self.main.Position - self.lastPos).Magnitude
 
 
 			local result = game.Workspace:Raycast(self.lastPos,direction*mag,RayParams)
 			if result and result.Instance.Transparency < 1 then
-				self.connections["cast"]:Disconnect()
+				self.fields._maid.castCon = nil
 				self.active = false
 				self:Explode()
 			end
@@ -213,15 +215,14 @@ function Missile.PredictIntercept(self: Missile): (Vector3, number)
 	local displacement: Vector3 = self.target - self.lastTarget
 	local velocity: Vector3 	= displacement / elapsed
 	local calibSpeed: number 	= math.min(self.fields.maxSpeed, self.speed + self.fields.accel) --the speed when you first fire overcompensates way too hard so add acceleration of 1 second
-	
-	--TTT estimate 1: assume straight path to the target
+
 	local timeToTarget: number 	= (origin - self.target).Magnitude / calibSpeed
 	local interceptPos: Vector3 = self.target + (velocity * timeToTarget)
 	for i = 0, self.fields.iterations, 1 do
 		local newTTT: number 	= (origin - interceptPos).Magnitude / calibSpeed
 		local newInt: Vector3	= self.target + (velocity * newTTT)
 		
-		--check convergence: break early if results are close enough
+		--if nothing changes between two iterations we can break early
 		if math.abs(newTTT - timeToTarget) < PREDICTION_CONFIDENCE then
 			return newInt, newTTT
 		end
@@ -353,13 +354,9 @@ function Missile.Abort(self: Missile)
 	end
 end
 
---- calls self:Abort() and then destroys any physical instances
+--- destroys maid (should clean up everything !)
 function Missile.Destroy(self: Missile)
-	self:Abort()
-	self.object:Destroy()
-	if self.att then 
-		self.att:Destroy() 
-	end
+	self.fields._maid:DoCleaning()
 end
 
 --- handles missile replication given two snapshots (to and from)
