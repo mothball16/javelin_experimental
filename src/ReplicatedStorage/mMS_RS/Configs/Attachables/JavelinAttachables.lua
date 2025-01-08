@@ -7,7 +7,7 @@ local Types = require(Modules:WaitForChild("Types"))
 
 
 local configs: {[string]: Types.AttachableConfig} = {
-    ["CLU"] = {
+    ["JavelinCLU"] = {
         name = "FGM-148 Command Launch Unit",
         forms = {
             Tool = false,
@@ -15,10 +15,16 @@ local configs: {[string]: Types.AttachableConfig} = {
             Embedded = true,
         },
         dropOnUnequip = false,
-        
+
     },
-    ["Housing"] = {
-        name = "FGM-148 Launch Tube Assembly"
+    ["JavelinLTA"] = {
+        name = "FGM-148 Launch Tube Assembly",
+        forms = {
+            Tool = true,
+            Dropped = true,
+            Embedded = true,
+        },
+        dropOnUnequip = true,
     }
 }
 

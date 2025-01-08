@@ -90,7 +90,7 @@ function AttachableService:Create(att: string, overrides: Types.AttachableConfig
 	-- init fields
 	conf["model"] = model
 	conf["main"] = model.PrimaryPart
-
+	
 	--overrides
 	for k,v in pairs(overrides or {}) do
 		conf[k] = v

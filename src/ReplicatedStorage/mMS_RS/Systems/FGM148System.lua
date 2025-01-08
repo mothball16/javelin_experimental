@@ -55,7 +55,8 @@ type self = {
     indicators: {[string]: {image: string, state: boolean}},
     root: any,
     clu: ScreenGui,
-    UpdateState: Signal.Signal<any>,
+    OnStateUpdated: Signal.Signal<any>,
+    OnZoomToggled: Signal.Signal<boolean>,
     state: Folder,
     
 }
@@ -75,7 +76,8 @@ function FGM148System.new(args: {
     local handle: BasePart = args.object:FindFirstChild("Handle") :: BasePart
     
     self.locker = TargetLocker.new()
-    self.UpdateState = Signal.new()
+    self.OnStateUpdated = Signal.new()
+    self.OnZoomToggled = Signal.new()
     self.indicators = table.clone(INDICATOR_DEFAULTS)
 
     -- set up ray params: should ignore self and launcher
@@ -87,7 +89,8 @@ function FGM148System.new(args: {
    -- end
 
     self._maid:GiveTask(self.locker)
-    self._maid:GiveTask(self.UpdateState)
+    self._maid:GiveTask(self.OnStateUpdated)
+    self._maid:GiveTask(self.OnZoomToggled)
     return self
 end
 
@@ -104,7 +107,8 @@ function FGM148System.Setup(self: FGM148System)
             e(CLUOptic,
             {
                 indicators = self.indicators,
-                updateSignal = self.UpdateState 
+                updateSignal = self.OnStateUpdated,
+                zoomSignal = self.OnZoomToggled, 
             })
         }),PGui))
     
@@ -117,7 +121,7 @@ function FGM148System.Setup(self: FGM148System)
             task.wait(0.5)
             local key = next(INDICATOR_DEFAULTS)
             self.locker.UpdateLock:Fire(math.random())
-            self.UpdateState:Fire({[key] = (math.random() > 0.5 and true or false)})
+            self.OnStateUpdated:Fire({[key] = (math.random() > 0.5 and true or false)})
         end
     end))
 end
@@ -126,6 +130,7 @@ function FGM148System.Destroy(self: FGM148System)
     self._maid:DoCleaning()
     --self.clu:Destroy()
 end
+
 
 
 return FGM148System

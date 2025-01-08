@@ -1,46 +1,4 @@
 {
-  "ignoreUnknownInstances": true,
-  "properties": {
-    "CFrame": [
-      33.728065490722656,
-      0.5792335867881775,
-      108.96240997314453,
-      1.0,
-      -3.7691572085662983e-10,
-      6.220942094792292e-10,
-      3.7691538778972244e-10,
-      1.0,
-      5.685515702680277e-7,
-      -6.220943760126829e-10,
-      -5.685515702680277e-7,
-      1.0
-    ],
-    "CanCollide": false,
-    "Color": {
-      "Color3uint8": [
-        255,
-        0,
-        191
-      ]
-    },
-    "CustomPhysicalProperties": {
-      "PhysicalProperties": {
-        "density": 0.1,
-        "friction": 1.0,
-        "elasticity": 1.0,
-        "frictionWeight": 1.0,
-        "elasticityWeight": 1.0
-      }
-    },
-    "EnableFluidForces": false,
-    "FormFactor": "Symmetric",
-    "Massless": true,
-    "Size": [
-      0.0010000000474974513,
-      0.0010000000474974513,
-      0.0010000000474974513
-    ],
-    "Transparency": 1.0
-  },
-  "className": "Part"
+  "className": "Part",
+  "ignoreUnknownInstances": true
 }

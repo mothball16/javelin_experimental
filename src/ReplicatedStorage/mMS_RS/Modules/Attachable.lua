@@ -104,7 +104,7 @@ function Attachable.new(fields: Types.AttachableFields): Attachable
 	Welder:WeldM(self.fields.model)
 
 	self.prompts["Tool"] = createPrompt(self, self.fields.main:FindFirstChild("Drop") :: Attachment?, {
-		desc = "Drop " .. self.fields.model.Name,
+		desc = "Drop " .. self.fields.name :: string,
 		bind = GlobalConfig.detachBind,
 		timer = self.fields.detachTime :: number,
 		dist = self.fields.interactionDistance :: number,
@@ -113,7 +113,7 @@ function Attachable.new(fields: Types.AttachableFields): Attachable
 	end)
 	
 	self.prompts["Dropped"] = createPrompt(self, self.fields.main:FindFirstChild("Equip") :: Attachment?, {
-		desc = "Pickup " .. self.fields.model.Name,
+		desc = "Pickup " .. self.fields.name :: string,
 		bind = GlobalConfig.detachBind,
 		timer = self.fields.equipTime :: number,
 		dist = self.fields.interactionDistance :: number,
@@ -132,13 +132,12 @@ function Attachable.ConvertTo(self: Attachable, player: Player, newForm: string,
 	self.fields.model.Parent = game.Workspace
 
 	--toggle the pickups
-	for _, v in pairs(self.prompts) do
-		if v.Name == newForm then
-			print(v.Name)
+	for k, v in pairs(self.prompts) do
+		if k == newForm then 
 			v.Enabled = true
-		else
-			v.Enabled = false
+			continue 
 		end
+		v.Enabled = false
 	end
 	
 	--clean up the previous form instances prior to conversion
@@ -168,7 +167,7 @@ function Attachable.ToTool(self: Attachable, player: Player): Tool
 	--2: create and parent the model to tool container
 	local tool = Instance.new("Tool")
 	tool.CanBeDropped = false
-	
+	tool.Name = self.fields.name :: string
 	--3: parent the model to the tool container
 	self.fields.model.Parent = tool
 
@@ -181,7 +180,7 @@ function Attachable.ToTool(self: Attachable, player: Player): Tool
 
 	--Insert objects to be destroyed when the form is to be switched
 	self.fields._fMaid:GiveTask(Welder:Weld(handle :: BasePart, self.fields.main))
-	self.fields._fMaid:GiveTask(handle)
+	self.fields._fMaid:GiveTask(tool)
 	return tool
 end
 
