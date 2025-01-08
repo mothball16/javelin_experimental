@@ -2,8 +2,13 @@ local config = {
 
 
 
+    ---binds-------------------------------------------------------------------------------------------
+    -- dropped -> tool
+    pickupBind = Enum.KeyCode.H,
+    -- tool -> dropped, embedded -> tool, embedded -> dropped
+    detachBind = Enum.KeyCode.G,
 
-    ---------------------------------------troubleshooting----------------------------------------------
+    ---troubleshooting/compatibility-------------------------------------------------------------------
     --[[
     If the Knit framework is already somewhere in your game, set loadKnit to false and do the following:
     Move services to wherever the currently existing Knit gets services, and do the same for controllers

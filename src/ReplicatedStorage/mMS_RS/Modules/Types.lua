@@ -84,7 +84,9 @@ export type MissileSystem = {
 
 export type AttachableFields = AttachableConfig & {
 	model: Model,
-	_maid: Maid.Maid,
+	main: BasePart,
+	_oMaid: Maid.Maid,
+	_fMaid: Maid.Maid,
 }
 export type AttachableConfig = {
 	name: string?,
@@ -95,12 +97,12 @@ export type AttachableConfig = {
 		Embedded: boolean,
 	}?,		
 	dropOnUnequip: boolean?,
+	toolOnDetach: boolean?,
 
 	holdAnim: string?,
 	equipTime: number?,
-	dropTime: number?,
+	detachTime: number?,
 	interactionDistance: number?,
-	interactionKey: Enum.KeyCode?,
 }
 
 return module

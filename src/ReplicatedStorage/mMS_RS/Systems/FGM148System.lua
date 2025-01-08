@@ -88,7 +88,6 @@ function FGM148System.new(args: {
 
     self._maid:GiveTask(self.locker)
     self._maid:GiveTask(self.UpdateState)
-    self._maid:GiveTask(self.object)
     return self
 end
 

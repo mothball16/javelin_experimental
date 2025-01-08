@@ -5,6 +5,7 @@
 -- @see Signal
 
 local Maid = {}
+local DEBUG_MODE = false-- game:GetService("RunService"):IsStudio()
 Maid.ClassName = "Maid"
 
 -- Intellisense
@@ -115,7 +116,10 @@ end
 -- @alias Destroy
 function Maid:DoCleaning()
 	local tasks = self._tasks
-
+	if DEBUG_MODE then
+		print(debug.traceback())
+		print(tasks)
+	end
 	-- Disconnect all events first as we know this is safe
 	for index, task in pairs(tasks) do
 		if typeof(task) == "RBXScriptConnection" then

@@ -14,7 +14,7 @@ local Attachable = require(Modules:WaitForChild("Attachable"))
 local Welder = require(Modules:WaitForChild("Welder"))
 
 ----------------------------------------------------------------------
-local ATT_FOLDER = mMS_RS:WaitForChild("Attachables")
+local ATT_FOLDER = mMS_RS:WaitForChild("Models"):WaitForChild("Attachables")
 local ATT_CONFIGS = mMS_RS:WaitForChild("Configs"):WaitForChild("Attachables")
 ----------------------------------------------------------------------
 local DEBUG_MODE = true
@@ -28,10 +28,10 @@ local AttachableService = Knit.CreateService({
 
 local function unpackNestedFolder(folder: Folder)
 
-	local function traverse(obj: any)
+	local function traverse(obj: any): ()
 		if obj:IsA("Folder") then
 			for _, v in pairs(obj:GetChildren()) do
-				table.unpack(unpackNestedFolder(obj))
+				traverse(v)
 			end
 		else
 			obj.Parent = folder
@@ -72,6 +72,7 @@ function AttachableService:KnitInit()
 	print("AttachableService initalized !!")
 end
 
+
 function AttachableService:Get(att: string)
 	local model = ATT_FOLDER:FindFirstChild(att)
 	local conf = self.Configs[att]
@@ -82,10 +83,18 @@ function AttachableService:Get(att: string)
 end
 
 -- create and register the attachable
-function AttachableService:Create(att: string): Attachable.Attachable
-	local model, conf = AttachableService:Get()
-	-- init fields (this used to be a lot bigger...)
-	conf["name"] = model.Name 
+function AttachableService:Create(att: string, overrides: Types.AttachableConfig?): (Attachable.Attachable, Model)
+	local model, conf = AttachableService:Get(att)
+	assert(model.PrimaryPart,"model must have a primary part")
+
+	-- init fields
+	conf["model"] = model
+	conf["main"] = model.PrimaryPart
+
+	--overrides
+	for k,v in pairs(overrides or {}) do
+		conf[k] = v
+	end
 
 	local attachable = Attachable.new(conf :: Types.AttachableFields)
 
@@ -93,8 +102,8 @@ function AttachableService:Create(att: string): Attachable.Attachable
 	local ID = HTTPS:GenerateGUID()
 	attachable.fields.model:SetAttribute("Identification", ID)
 	self.Register[ID] = attachable 
-
-	return attachable
+	
+	return attachable, attachable.fields.model
 end
 
 --[[
