@@ -11,7 +11,7 @@ Knit.Start({ServicePromises = false}):andThen(function()
 	print("Knit started server")
 	local AttachableService = Knit.GetService("AttachableService")
 	
-	local _,attachment = AttachableService:Create("Housing")
+	local _,attachment = AttachableService:Create("JavelinLTA")
 	attachment.Parent = game.Workspace
 	attachment:PivotTo(CFrame.new(0,20,0))
 end):catch(warn)

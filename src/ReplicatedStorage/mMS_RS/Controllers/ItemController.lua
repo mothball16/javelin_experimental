@@ -1,12 +1,13 @@
 --!strict
 
---[[
-This script is used receive and carry out any actions that need to continue after the tool is unequipped (e.g. shooting a missile)
-Originally this was literally the only purpose of the script but after making just that one task I was like "I need to add at least 3 more things to this"
+local RS = game:GetService("ReplicatedStorage")
+local mMS_RS = RS:WaitForChild("mMS_RS")
+local Modules = mMS_RS:WaitForChild("Modules")
+local Packages = mMS_RS:WaitForChild("Packages")
+local Missile = require(Modules:WaitForChild("Missile"))
+local Knit = require(Packages:WaitForChild("Knit"))
+local Types = require(Modules:WaitForChild("Types"))
 
-
-( Is this how a framework works??? Ion know i should probably go to my cs lectures )
-]]
 
 
 
@@ -42,7 +43,34 @@ local ID = "mothballMissileSystem"
 ------------------------------------------------------------------
 --- sets up and connects the newly loaded system
 --- @param newSys: Types.MissileSystem - the system to load in
-local function SetupSystem(newSys: Types.MissileSystem)
+
+char.ChildAdded:Connect(function(child: Instance)
+	
+end)
+
+char.ChildRemoved:Connect(
+end)
+
+
+
+
+
+
+local ItemController = Knit.CreateController({
+	Name = "ItemController"
+})
+
+function ItemController:KnitInit()
+	print("ItemController initalized")
+end
+
+function ItemController:KnitStart()
+	
+	print("ItemController started")
+end
+
+
+function ItemController:SetupSystem(newSys: Types.MissileSystem)
 	local MissileController = Knit.GetController("MissileController")
 	--since we know a new system is now being introduced, clean out the current system
 	if system then
@@ -59,7 +87,8 @@ local function SetupSystem(newSys: Types.MissileSystem)
 end
 
 
-char.ChildAdded:Connect(function(child: Instance)
+
+function ItemController:OnChildAdded(child: Instance)
 	-- if there is already a system loaded, don't let a new one get initialized
 	if system then return end
 	local isSeat = false
@@ -90,9 +119,10 @@ char.ChildAdded:Connect(function(child: Instance)
 	SetupSystem(newSys.new({
 		object = child
 	}) :: Types.MissileSystem)
-end)
+end
 
-char.ChildRemoved:Connect(function(child: Instance)
+
+function ItemController:OnChildRemoved(child: Instance)
 	--we dont care if its not the system
 	if not system then return end
 
@@ -113,4 +143,8 @@ char.ChildRemoved:Connect(function(child: Instance)
 			system = nil
 		end
 	end
-end)
+end
+
+
+return ItemController
+

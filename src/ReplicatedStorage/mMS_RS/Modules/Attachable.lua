@@ -160,7 +160,13 @@ end
 --- 2. clone the primaryPart and use it as the handle
 --- 3. weld clone and original, add formInstances
 --- @return Tool
-function Attachable.ToTool(self: Attachable, player: Player): Tool
+function Attachable.ToTool(self: Attachable, player: Player): Tool?
+	local char = player.Character
+	if not char then 
+		self:ConvertTo(player,"Dropped") 
+		return 
+	end
+	local hum: Humanoid = char:FindFirstChildOfClass("Humanoid") :: Humanoid
 	local handle: Instance? = self.fields.model:FindFirstChild("Handle") or self.fields.main
 	assert(handle, "Either child 'Handle' or PrimaryPart must exist for model to be converted into a tool.")
 	
@@ -170,13 +176,20 @@ function Attachable.ToTool(self: Attachable, player: Player): Tool
 	tool.Name = self.fields.name :: string
 	--3: parent the model to the tool container
 	self.fields.model.Parent = tool
-
+	
 	--4: clone the primaryPart and use it as the handle, weld clone and original
 	handle = handle:Clone()
 	handle.Name = "Handle"
 	handle.Parent = tool
 
 	tool.Parent = player.Backpack
+	hum:EquipTool(tool)
+
+	if self.fields.dropOnUnequip then
+		self.fields._fMaid:GiveTask(tool.Unequipped:Connect(function()
+			self:ConvertTo(player, "Dropped")
+		end))
+	end
 
 	--Insert objects to be destroyed when the form is to be switched
 	self.fields._fMaid:GiveTask(Welder:Weld(handle :: BasePart, self.fields.main))

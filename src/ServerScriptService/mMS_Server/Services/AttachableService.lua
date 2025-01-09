@@ -22,7 +22,7 @@ local DEBUG_MODE = true
 local AttachableService = Knit.CreateService({
 	Name = "AttachableService",
 	Configs = {},
-	Register = {},
+	Registry = {},
 	Client = {},
 })
 
@@ -82,29 +82,28 @@ function AttachableService:Get(att: string)
 	return model, conf
 end
 
--- create and register the attachable
-function AttachableService:Create(att: string, overrides: Types.AttachableConfig?): (Attachable.Attachable, Model)
-	local model, conf = AttachableService:Get(att)
+--- given the info to create the attachable, register and set it up (Separated so that already existing models can be set up)
+function AttachableService:Register(model: Model, conf: Types.AttachableConfig): Attachable.Attachable
+	--set up attachableFields
 	assert(model.PrimaryPart,"model must have a primary part")
-
-	-- init fields
 	conf["model"] = model
 	conf["main"] = model.PrimaryPart
-	
-	--overrides
-	for k,v in pairs(overrides or {}) do
-		conf[k] = v
-	end
-
 	local attachable = Attachable.new(conf :: Types.AttachableFields)
-
-	--set up lookup
 	local ID = HTTPS:GenerateGUID()
 	attachable.fields.model:SetAttribute("Identification", ID)
-	self.Register[ID] = attachable 
-	
-	return attachable, attachable.fields.model
+	self.Registry[ID] = attachable 
+	return attachable
 end
+
+--- create an attachable the usual way
+function AttachableService:Create(att: string, overrides: Types.AttachableConfig?): (Attachable.Attachable, Model)
+	local model, conf = AttachableService:Get(att)
+	model = model:Clone()
+	-- init fields
+	return self:Register(model, conf), model
+end
+
+
 
 --[[
 -- join two attachables

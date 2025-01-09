@@ -42,7 +42,7 @@ local MissileService = Knit.CreateService({
 
 
 --do vars in KnitInit
-function MissileService:KnitInit()
+function MissileService:KnitInit()	
 	self.Client.RegisterMissile:Connect(function(player: Player,config: Types.MissileFields, snapshot: Types.MissileSnapshot)
 		assert(config.identifier,"no identifier on missile")
 		local missileData: MissileReplData = {

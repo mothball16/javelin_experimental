@@ -12,8 +12,8 @@ local Modules = mMS_RS:WaitForChild("Modules")
 local Types = require(Modules:WaitForChild("Types"))
 local Signal = require(Packages:WaitForChild("Signal"))
 local Maid = require(Modules:WaitForChild("Maid"))
+local GlobalConfig = require(mMS_RS:WaitForChild("Configs"):WaitForChild("GlobalConfig"))
 ----------------------------------------------------------------
-local STATE_NAME = "mMS_State"
 
 
 
@@ -24,12 +24,10 @@ type self = {}
 
 export type HandheldBase = typeof(setmetatable({} :: self, HandheldBase)) & Types.MissileSystem
 
-function HandheldBase.new(args: {
-    object: Model,
-    state: Folder | nil,
-}): HandheldBase
-
+function HandheldBase.new(args: {object: Model}): HandheldBase
+    --args.state = args.object:FindFirstChild(GlobalConfig.stateName)
     local self = setmetatable({} :: HandheldBase, HandheldBase)
+
     self._maid = Maid.new()
     self.OnFire = Signal.new()
     self._maid:GiveTask(self.OnFire)
@@ -37,13 +35,11 @@ function HandheldBase.new(args: {
     self.object = args.object
 
 
-    -- ensure that state exists
-    local _state = args.state or args.object:FindFirstChild(STATE_NAME)
-    assert(_state and _state:IsA("Folder"), "state doesn't exist for HandheldBase of type " .. self.object.Name)
-    
-    self.state = _state
+
+   -- self.state = self.object:FindFirstChild(GlobalConfig.stateName :: string) :: Folder
     return self
 end
+
 
 --- this should do at minimum 2 things:
 --- Initialize the UI

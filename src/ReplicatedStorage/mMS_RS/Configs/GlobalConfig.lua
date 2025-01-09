@@ -2,6 +2,7 @@ local config = {
 
 
 
+
     ---binds-------------------------------------------------------------------------------------------
     -- dropped -> tool
     pickupBind = Enum.KeyCode.H,
@@ -20,6 +21,8 @@ local config = {
 
     ]]
     loadKnit = true, 
+    
+    stateName = "mMS_State",
 
     
 }
