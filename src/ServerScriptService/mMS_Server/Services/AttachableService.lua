@@ -19,12 +19,12 @@ local ATT_CONFIGS = mMS_RS:WaitForChild("Configs"):WaitForChild("Attachables")
 ----------------------------------------------------------------------
 local DEBUG_MODE = true
 
-local AttachableService = Knit.CreateService({
+local AttachableService = {
 	Name = "AttachableService",
 	Configs = {},
 	Registry = {},
-	Client = {},
-})
+	
+}
 
 local function unpackNestedFolder(folder: Folder)
 
