@@ -14,11 +14,16 @@ local Components = mMS_RS:WaitForChild("Components")
 local React = require(Packages.ReactLua)
 local ReactRoblox = require(Packages.ReactRoblox)
 local Signal = require(Packages:WaitForChild("Signal"))
+local Input = require(Packages:WaitForChild("Input"))
+local Charm = require(Packages:WaitForChild("Charm"))
 local Maid = require(Modules:WaitForChild("Maid"))
 local TargetLocker = require(Modules:WaitForChild("TargetLocker"))
 local HandheldBase = require(Modules:WaitForChild("HandheldBase"))
 local CLUOptic = require(Components:WaitForChild("JavelinCLU"):WaitForChild("CLUOptic"))
+
 local e = React.createElement
+local Keyboard, Mouse = Input.Keyboard.new(), Input.Mouse.new()
+
 --local WeaponComponent = require(Modules.WeaponComponent)
 ----------------------------------------------------------------
 
@@ -38,6 +43,14 @@ local INDICATOR_DEFAULTS =  {
     ["TOP"] =       {image = "rbxassetid://81416663556280", state = true},
     ["WFOV"] =      {image = "rbxassetid://97724947789086", state = true},
 }
+
+local BINDS: {[string]: Enum.KeyCode} = {
+    ["Seek"] = Enum.KeyCode.F,
+    ["Path"] = Enum.KeyCode.T,
+    ["NV"] = Enum.KeyCode.H,
+    ["FOV"] = Enum.KeyCode.G,
+}
+
 
 local plr = game.Players.LocalPlayer
 local char = plr.Character or plr.CharacterAdded:Wait()
@@ -77,6 +90,7 @@ function FGM148System.new(args: {
     }) :: FGM148System, FGM148System)
     self._maid = Maid.new()
 
+
     self.locker = TargetLocker.new()
     self.OnStateUpdated = Signal.new()
     self.OnZoomToggled = Signal.new()
@@ -115,18 +129,35 @@ function FGM148System.Setup(self: FGM148System)
     self._maid:GiveTask(function()
         self.root:unmount()
     end)
+    
 
-    self._maid:GiveTask(UIS.InputBegan:Connect(function(input: InputObject, chatting: boolean)
-        if chatting then return end
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            
-        elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
-            self.zoomed = not self.zoomed
-            self.OnZoomToggled:Fire(self.zoomed)
-        end
+    self._maid:GiveTask(Mouse.LeftDown:Connect(function()
+        print("leftDown")
+    end))
+
+    self._maid:GiveTask(Mouse.RightDown:Connect(function()
+        self.zoomed = not self.zoomed
+        self.OnZoomToggled:Fire(self.zoomed)
     end))
 
 
+    self._maid:GiveTask(Keyboard.KeyDown:Connect(function(key: Enum.KeyCode)
+        if key == BINDS.Seek then
+            
+        elseif key == BINDS.FOV then
+            
+        elseif key == BINDS.Path then
+
+        elseif key == BINDS.NV then
+        
+        end
+    end))
+
+    self._maid:GiveTask(Keyboard.KeyUp:Connect(function(key: Enum.KeyCode)
+        if key == BINDS.Seek then
+            
+        end
+    end))
     --test code
     coroutine.resume(coroutine.create(function()
         while true do

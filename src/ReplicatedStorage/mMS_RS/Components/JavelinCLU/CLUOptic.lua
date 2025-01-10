@@ -13,7 +13,8 @@ local BORDER_COLOR = Color3.fromRGB(0,0,0)
 --defined params to fix type checking bug (Maybe this is a good practice too Ion know)
 local function CLUOptic(props: {
 	indicators: {[string]: {image: string, state: boolean}},
-	updateSignal: Signal.Signal<any>
+	updateSignal: Signal.Signal<any>,
+	zoomSignal: Signal.Signal<boolean>,
 })
 	local children = {
 		Ratio = React.createElement("UIAspectRatioConstraint",{}),
@@ -52,7 +53,7 @@ local function CLUOptic(props: {
 	}
 
 	local state, setState = React.useState(table.clone(props.indicators))
-
+	local vis, setVis = React.useState(false)
 
 	for k,v in pairs(props.indicators) do
 		children[k] = React.createElement(CLUIndicator,{
@@ -80,6 +81,16 @@ local function CLUOptic(props: {
 		end
 	end)
 
+	React.useEffect(function()
+		local connection = props.zoomSignal:Connect(function(newState)
+			setVis(newState)
+		end)
+
+		return function()
+			connection:Disconnect()
+		end
+	end)
+
 	return React.createElement("ImageLabel",{
 		AnchorPoint = Vector2.new(0.5,0.5),
 		Position = UDim2.fromScale(0.5, 0.5),
@@ -87,7 +98,8 @@ local function CLUOptic(props: {
 		BackgroundTransparency = 1,
 		Size = UDim2.new(0.9,0,1.2,0),
 		Image = "rbxassetid://107048180741183",
-		ScaleType = Enum.ScaleType.Stretch
+		ScaleType = Enum.ScaleType.Stretch,
+		Visible = vis,
 	}, {children})
 end
 

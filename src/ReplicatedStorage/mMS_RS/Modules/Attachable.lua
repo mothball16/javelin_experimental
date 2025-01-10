@@ -21,7 +21,7 @@ local Packages = RS:WaitForChild("Packages")
 local Configs = mMS_RS:WaitForChild("Configs")
 local GlobalConfig = require(Configs:WaitForChild("GlobalConfig"))
 local Types = require(Modules:WaitForChild("Types"))
-local Signal = require(Packages:WaitForChild("Signal"))
+local _Signal = require(Packages:WaitForChild("Signal"))
 local Welder = require(Modules:WaitForChild("Welder"))
 local Maid = require(Modules:WaitForChild("Maid"))
 -------------------------------------------------------------------
@@ -201,6 +201,7 @@ end
 
 --- convert the model to an inert object
 function Attachable.ToDropped(self: Attachable, player: Player)
+	self.fields.main:SetNetworkOwner()
 	return self.fields.model
 end
 

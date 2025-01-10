@@ -16,6 +16,7 @@ local State = require(Client:WaitForChild("SharedState"))
 local Types = require(Modules:WaitForChild("Types"))
 local Maid = require(Modules:WaitForChild("Maid"))
 local GlobalConfig = require(Modules:WaitForChild("GC"))
+local SystemCache: {[string]: Types.MissileSystem} = {}
 ------------------------------------------------------------------
 --plr references
 local player = game.Players.LocalPlayer
@@ -47,11 +48,11 @@ function SysController:Init()
 		--check if the child has the identification for missile system
 		local toRequire = child:GetAttribute(GlobalConfig.Identification) :: string?
 		if not toRequire then return end
-		local system = self:GetSystem(toRequire)
+		local system = self:GetSystem(toRequire) :: Types.MissileSystem?
 		if not system then return end
-	
+		--system = system.new(child) :: Types.MissileSystem
 		--init
-		self:LoadSystem(system :: Types.MissileSystem,isSeat)
+		self:LoadSystem(system.new({object = child}),isSeat)
 	end
 	
 	
@@ -65,7 +66,6 @@ function SysController:Init()
 				if child.Part0 and child.Part0:GetAttribute(GlobalConfig.Identification) then
 				elseif child.Part1 and child.Part1:GetAttribute(GlobalConfig.Identification) then
 				else return end
-	
 				self:UnloadSystem()
 			end
 		else
@@ -99,6 +99,7 @@ end
 --- @param name string - the name of the system 
 --- @return Types.MissileSystem - the system
 function SysController:GetSystem(name: string): Types.MissileSystem?
+	if SystemCache[name] then return SystemCache[name] end
 
 	--check if the controller exists
 	local found = Systems:FindFirstChild(name)
@@ -108,14 +109,16 @@ function SysController:GetSystem(name: string): Types.MissileSystem?
 	end
 	--poopy typecheck bypass
 	local sys: any = require(found) :: any
+	SystemCache[name] = sys
 
-	return sys
+	return sys :: Types.MissileSystem
 end
 
 function SysController:LoadSystem(system: Types.MissileSystem,isSeat: boolean,...)
 	if State.currentSystem then
 		self:UnloadSystem()
 	end
+	
 	system:Setup(...)
 	State.currentSystem = system
 	State.systemIsSeat = isSeat

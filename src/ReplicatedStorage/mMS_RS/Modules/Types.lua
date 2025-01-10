@@ -74,7 +74,7 @@ export type MissileSystem = {
 	object: Instance,
 	state: Folder,
 	_maid: Maid.Maid,
-
+	new: (args: {[string]: any}) -> (MissileSystem),
 	Setup: (self: MissileSystem) -> (),
 	--When object is ready to go
 	Destroy: (self: MissileSystem) -> (),
