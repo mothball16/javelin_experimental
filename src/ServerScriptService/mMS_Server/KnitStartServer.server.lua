@@ -1,8 +1,8 @@
---!strict
+
 local SSS = game:GetService("ServerScriptService")
 local mMS_Server = SSS:WaitForChild("mMS_Server")
-local RS = game:GetService("ReplicatedStorage")
-local mMS_RS = RS:WaitForChild("mMS_RS")
-local Packages = RS:WaitForChild("Packages")
+local Service = mMS_Server:WaitForChild("Services")
 
-
+for _,v in pairs(Service:GetChildren()) do
+    require(v):Init()
+end

@@ -15,3 +15,5 @@ local Controllers = mMS_RS:WaitForChild("Controllers")
 
 require(Controllers:WaitForChild("SysController")):Init()
 require(Controllers:WaitForChild("MissileController")):Init()
+
+print("mothballMissileSystem finished loading !!!!")

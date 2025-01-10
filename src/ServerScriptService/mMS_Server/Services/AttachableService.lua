@@ -48,7 +48,7 @@ local function unpackNestedFolder(folder: Folder)
 	return {}
 end
 --do vars in KnitInit
-function AttachableService:KnitInit()
+function AttachableService:Init()
 	--unpack the folder structure
 	unpackNestedFolder(ATT_CONFIGS)
 	unpackNestedFolder(ATT_FOLDER)

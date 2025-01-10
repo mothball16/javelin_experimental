@@ -4,3 +4,4 @@ script.Parent.CFrame *= CFrame.new(0,0,1 + accel)
 accel += 0.01
 wait()
 end
+

@@ -13,9 +13,10 @@ local Components = mMS_RS:WaitForChild("Components")
 
 local React = require(Packages.ReactLua)
 local ReactRoblox = require(Packages.ReactRoblox)
+local Signal = require(Packages:WaitForChild("Signal"))
+local Maid = require(Modules:WaitForChild("Maid"))
 local TargetLocker = require(Modules:WaitForChild("TargetLocker"))
 local HandheldBase = require(Modules:WaitForChild("HandheldBase"))
-local Signal = require(Packages:WaitForChild("Signal"))
 local CLUOptic = require(Components:WaitForChild("JavelinCLU"):WaitForChild("CLUOptic"))
 local e = React.createElement
 --local WeaponComponent = require(Modules.WeaponComponent)
@@ -74,7 +75,8 @@ function FGM148System.new(args: {
         object = args.object,
     --    state = args.object:FindFirstChild("mMS_State") :: Folder
     }) :: FGM148System, FGM148System)
-    
+    self._maid = Maid.new()
+
     self.locker = TargetLocker.new()
     self.OnStateUpdated = Signal.new()
     self.OnZoomToggled = Signal.new()

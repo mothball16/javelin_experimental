@@ -26,6 +26,9 @@ local MissileService = {
 
 
 function MissileService:Init()
+	local onMissileRegistered = Net:RemoteEvent("OnMissileRegistered")
+	local onMissileUpdated = Net:RemoteEvent("OnMissileUpdated")
+	local onMissileDestroyed = Net:RemoteEvent("OnMissileDestroyed")
 
 	Net:RemoteEvent("RegisterMissile").OnServerEvent:Connect(function(player: Player,config: Types.MissileFields, snapshot: Types.MissileSnapshot)
 		assert(config.identifier,"no identifier on missile")
@@ -44,7 +47,7 @@ function MissileService:Init()
 		--fire updates
 		for _, v in PS:GetPlayers() do
 			if not DEBUG_MODE and v == player then continue end
-			self.Client.MissileRegistered:Fire(v,missileData, snapshot)
+			onMissileRegistered:FireClient(v,missileData, snapshot)
 		end
 	end)
 	
@@ -72,7 +75,7 @@ function MissileService:Init()
 		--fire updates
 		for _,v in PS:GetPlayers() do
 			if not DEBUG_MODE and v == thisMissile.owner then continue end
-			self.Client.MissileUpdated:Fire(v, id, snapshot)
+			onMissileUpdated:FireClient(v, id, snapshot)
 		end
 	end)
 
