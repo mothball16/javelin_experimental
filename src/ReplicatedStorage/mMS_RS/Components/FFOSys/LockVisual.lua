@@ -1,7 +1,7 @@
 local RS = game:GetService("ReplicatedStorage")
 local mMS_RS = RS:WaitForChild("mMS_RS")
-local React = require(mMS_RS.Packages.ReactLua)
-local UseMotion = require(mMS_RS.Modules.UseMotion)
+local React = require(RS:WaitForChild("Packages"):WaitForChild("ReactLua"))
+local UseMotion = require(mMS_RS:WaitForChild("Modules"):WaitForChild("UseMotion"))
 
 local e = React.createElement
 local function LockVisual(props)
@@ -27,6 +27,7 @@ local function LockVisual(props)
             })
         ) 
     end
+    
     
     local children = {
         Ratio = React.createElement("UIAspectRatioConstraint",{

@@ -5,8 +5,8 @@ No state needs to be maintained, this is just to make the thing light up.
 
 local RS = game:GetService("ReplicatedStorage")
 local mMS_RS = RS:WaitForChild("mMS_RS")
-local React = require(mMS_RS.Packages.ReactLua)
-local UseMotion = require(mMS_RS.Modules.UseMotion)
+local React = require(RS:WaitForChild("Packages"):WaitForChild("ReactLua"))
+local UseMotion = require(mMS_RS:WaitForChild("Modules"):WaitForChild("UseMotion"))
 
 
 local function Indicator(props)

@@ -1,11 +1,12 @@
 --!strict
-local RS = game:GetService("ReplicatedStorage")
-local mMS_RS = RS:WaitForChild("mMS_RS")
-local Packages = RS:WaitForChild("Packages")
-local React = require(Packages.ReactLua)
 local CLUFolder = script.Parent
-local CLUIndicator = require(CLUFolder:WaitForChild("Indicator"))
+local RS = game:GetService("ReplicatedStorage")
+local Packages = RS:WaitForChild("Packages")
+
+local React = require(Packages.ReactLua)
 local Signal = require(Packages.Signal)
+local CLUIndicator = require(CLUFolder:WaitForChild("Indicator"))
+
 local BORDER_COLOR = Color3.fromRGB(0,0,0)
 
 

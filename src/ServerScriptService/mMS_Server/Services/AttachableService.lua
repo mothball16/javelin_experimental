@@ -8,7 +8,6 @@ local Packages = RS:WaitForChild("Packages")
 local Modules = mMS_RS:WaitForChild("Modules")
 
 local Maid = require(Modules:WaitForChild("Maid"))
-local Knit = require(Packages:WaitForChild("Knit"))
 local Types = require(Modules:WaitForChild("Types"))
 local Attachable = require(Modules:WaitForChild("Attachable"))
 local Welder = require(Modules:WaitForChild("Welder"))

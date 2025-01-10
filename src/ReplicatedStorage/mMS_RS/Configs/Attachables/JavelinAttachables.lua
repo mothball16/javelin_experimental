@@ -1,10 +1,5 @@
 --!strict
-local RS = game:GetService("ReplicatedStorage")
-local mMS_RS = RS:WaitForChild("mMS_RS")
-local Modules = mMS_RS:WaitForChild("Modules")
-local Types = require(Modules:WaitForChild("Types"))
-
-
+local Types = require(game:GetService("ReplicatedStorage"):WaitForChild("mMS_RS"):WaitForChild("Modules"):WaitForChild("Types"))
 
 local configs: {[string]: Types.AttachableConfig} = {
     ["JavelinCLU"] = {
@@ -27,6 +22,5 @@ local configs: {[string]: Types.AttachableConfig} = {
         dropOnUnequip = true,
     }
 }
-
 
 return configs

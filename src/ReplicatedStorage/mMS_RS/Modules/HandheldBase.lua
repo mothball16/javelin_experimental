@@ -12,7 +12,7 @@ local Modules = mMS_RS:WaitForChild("Modules")
 local Types = require(Modules:WaitForChild("Types"))
 local Signal = require(Packages:WaitForChild("Signal"))
 local Maid = require(Modules:WaitForChild("Maid"))
-local GlobalConfig = require(mMS_RS:WaitForChild("Configs"):WaitForChild("GlobalConfig"))
+--local GlobalConfig = require(mMS_RS:WaitForChild("Configs"):WaitForChild("GlobalConfig"))
 ----------------------------------------------------------------
 
 

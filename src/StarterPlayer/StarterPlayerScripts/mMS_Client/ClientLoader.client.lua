@@ -4,7 +4,6 @@
 load modules nyan !!!
 ]]
 
---services
 local RS = game:GetService("ReplicatedStorage")
 local mMS_RS = RS:WaitForChild("mMS_RS")
 local _Packages = RS:WaitForChild("Packages")
@@ -13,5 +12,6 @@ local Controllers = mMS_RS:WaitForChild("Controllers")
 
 
 
-require(Controllers:WaitForChild("SysEquipController"))
-require(Controllers:WaitForChild("MissileController"))
+
+require(Controllers:WaitForChild("SysController")):Init()
+require(Controllers:WaitForChild("MissileController")):Init()
