@@ -1,6 +1,6 @@
 
 
-export type State {
+export type State = {
     currentSystem: string?,
     systemIsSeat: boolean,
 }

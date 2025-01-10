@@ -4,7 +4,7 @@ local HTTPS = game:GetService("HttpService")
 local RS = game:GetService("ReplicatedStorage")
 local PS = game:GetService("Players")
 local mMS_RS = RS:WaitForChild("mMS_RS")
-local Packages = mMS_RS:WaitForChild("Packages")
+local Packages = RS:WaitForChild("Packages")
 local Modules = mMS_RS:WaitForChild("Modules")
 
 local Maid = require(Modules:WaitForChild("Maid"))

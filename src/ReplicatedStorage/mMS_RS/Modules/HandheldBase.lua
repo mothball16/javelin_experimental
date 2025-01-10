@@ -7,7 +7,7 @@ this script is the boilerplate for any tool-based missile launchers. It provides
 
 local RS = game:GetService("ReplicatedStorage")
 local mMS_RS = RS:WaitForChild("mMS_RS")
-local Packages = mMS_RS:WaitForChild("Packages")
+local Packages = RS:WaitForChild("Packages")
 local Modules = mMS_RS:WaitForChild("Modules")
 local Types = require(Modules:WaitForChild("Types"))
 local Signal = require(Packages:WaitForChild("Signal"))

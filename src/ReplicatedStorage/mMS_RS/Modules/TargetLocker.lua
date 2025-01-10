@@ -6,7 +6,7 @@ composition for any locking mechanism. has mechanics for establishing, breaking 
 
 local RS = game:GetService("ReplicatedStorage")
 local mMS_RS = RS:WaitForChild("mMS_RS")
-local Packages = mMS_RS:WaitForChild("Packages")
+local Packages = RS:WaitForChild("Packages")
 local Modules = mMS_RS:WaitForChild("Modules")
 local Components = mMS_RS:WaitForChild("Components")
 local Signal = require(Packages:WaitForChild("Signal"))
@@ -30,6 +30,7 @@ type self = {
 	lockPercent: number,
     _maid: Maid.Maid,
 
+    
     UpdateLock: Signal.Signal<number>,
 	OnLockStarted: Signal.Signal<Attachment>,
 	OnLockEnded: Signal.Signal<>,

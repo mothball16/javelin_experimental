@@ -1,7 +1,7 @@
 --!strict
 local RS = game:GetService("ReplicatedStorage")
 local mMS_RS = RS:WaitForChild("mMS_RS")
-local Packages = mMS_RS:WaitForChild("Packages")
+local Packages = RS:WaitForChild("Packages")
 local React = require(Packages.ReactLua)
 local CLUFolder = script.Parent
 local CLUIndicator = require(CLUFolder:WaitForChild("Indicator"))

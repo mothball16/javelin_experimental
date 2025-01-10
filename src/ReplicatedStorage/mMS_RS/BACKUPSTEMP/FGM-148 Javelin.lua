@@ -27,7 +27,7 @@ return module
 local UIS = game:GetService("UserInputService")
 local RS = game:GetService("ReplicatedStorage")
 local RUS = game:GetService("RunService")
-local Packages = mMS_RS:WaitForChild("Packages")
+local Packages = RS:WaitForChild("Packages")
 local Knit = require(Packages:WaitForChild("Knit"))
 --remote stuff
 local mMS_RS = game.ReplicatedStorage:WaitForChild("mMS_RS")

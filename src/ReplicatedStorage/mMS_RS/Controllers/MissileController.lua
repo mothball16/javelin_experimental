@@ -1,32 +1,30 @@
 --!strict
+--[[
+Handles the creation and replication of missiles from the client side.
+]]
+
 
 local RS = game:GetService("ReplicatedStorage")
 local mMS_RS = RS:WaitForChild("mMS_RS")
 local Modules = mMS_RS:WaitForChild("Modules")
-local Packages = mMS_RS:WaitForChild("Packages")
+local Packages = RS:WaitForChild("Packages")
 local Missile = require(Modules:WaitForChild("Missile"))
-local Knit = require(Packages:WaitForChild("Knit"))
 local Types = require(Modules:WaitForChild("Types"))
+local Net = require(Packages:WaitForChild("Net"))
+local GlobalConfig = require(Modules:WaitForChild("GC"))
 
 
---Client-side storage of updated missile data.
 local MissileUpdates: {[string]: {
 	main: Missile.Missile,
 	from: Types.MissileSnapshot?
 }} = {}
 
-local MissileController = Knit.CreateController({
-	Name = "MissileController"
-})
+local MissileController = {
+	Name = "MissileController",
+}
 
-function MissileController:KnitInit()
-	print("MissileController initalized")
-end
 
-function MissileController:KnitStart()
-	local MissileService = Knit.GetService("MissileService")
-	
-	
+function MissileController:Init()	
 	local function HandleRegister(data: Types.MissileReplData, snapshot: Types.MissileSnapshot)
 		local missile = Missile.new(data.fields)
 		missile.main.Anchored = true
@@ -34,7 +32,7 @@ function MissileController:KnitStart()
 			main = missile,
 			from = snapshot,
 		}
-		game.Debris:AddItem(missile.object, MissileService.MISSILE_MAX_TIME:Get())
+		game.Debris:AddItem(missile.object, GlobalConfig.MissileMaxLifeTime)
 	end
 	
 	local function HandleUpdate(id: string, snapshot: Types.MissileSnapshot)
@@ -53,22 +51,23 @@ function MissileController:KnitStart()
 	local function HandleDestroy(id: string)
 		
 	end
+
 	
-	MissileService.MissileRegistered:Connect(HandleRegister)
-	MissileService.MissileUpdated:Connect(HandleUpdate)
-	MissileService.MissileDestroyed:Connect(HandleDestroy)
-	print("MissileController started")
+	Net:Connect("OnMissileRegistered", HandleRegister)
+	Net:Connect("OnMissileUpdated", HandleUpdate)
+	Net:Connect("OnMissileDestroyed", HandleDestroy)
+
+	print("MissileController started !!")
 end
 
 --register (for replication) and then start the missile
 function MissileController:RegisterMissile(fields: Types.MissileFields): Missile.Missile
 	local missile: Missile.Missile = Missile.new(fields)
 	coroutine.resume(coroutine.create(function()
-		local MissileService = Knit.GetService("MissileService")
 		missile:Init()
 		--send a request to the server to register the missile
-		MissileService.RegisterMissile:Fire(missile.fields,missile:Snapshot())
-		
+		Net:RemoteEvent("RegisterMissile"):FireServer(missile.fields,missile:Snapshot())
+
 		--frequently update the missile until it takes off, as it is closest to the view of the player
 		repeat 
 			task.wait() 
@@ -80,16 +79,14 @@ function MissileController:RegisterMissile(fields: Types.MissileFields): Missile
 			missile:Run()
 			-- provide updates for replication after done running
 			self:UpdateMissile(missile)
-			task.wait(0.1)
+			task.wait(GlobalConfig.MissileReplicationDelay)
 		end
 	end))
 	return missile
-	
 end
 
 function MissileController:UpdateMissile(missile: Missile.Missile)
-	local MissileService = Knit.GetService("MissileService")
-	MissileService.UpdateMissile:Fire(missile.fields.identifier,missile:Snapshot())
+	Net:RemoteEvent("UpdateMissile"):FireServer(missile.fields.identifier :: string, missile:Snapshot())
 end
 
 

@@ -17,7 +17,7 @@ attachables must have:
 local RS = game:GetService("ReplicatedStorage")
 local mMS_RS = RS:WaitForChild("mMS_RS")
 local Modules = mMS_RS:WaitForChild("Modules")
-local Packages = mMS_RS:WaitForChild("Packages")
+local Packages = RS:WaitForChild("Packages")
 local Configs = mMS_RS:WaitForChild("Configs")
 local GlobalConfig = require(Configs:WaitForChild("GlobalConfig"))
 local Types = require(Modules:WaitForChild("Types"))
@@ -88,6 +88,8 @@ local function createPrompt(self: Attachable, parent: Attachment?, params: {
 	self.fields._oMaid:GiveTask(prox.Triggered:Connect(func))
 	return prox
 end
+
+
 
 
 function Attachable.new(fields: Types.AttachableFields): Attachable

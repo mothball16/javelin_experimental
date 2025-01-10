@@ -4,7 +4,7 @@ local module = {}
 local RS = game:GetService("ReplicatedStorage")
 local mMS_RS = RS:WaitForChild("mMS_RS")
 local Modules = mMS_RS:WaitForChild("Modules")
-local Packages = mMS_RS:WaitForChild("Packages")
+local Packages = RS:WaitForChild("Packages")
 local Signal = require(Packages:WaitForChild("Signal"))
 local Maid = require(Modules:WaitForChild("Maid"))
 
