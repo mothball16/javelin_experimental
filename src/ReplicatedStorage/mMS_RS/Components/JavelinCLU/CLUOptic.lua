@@ -70,7 +70,7 @@ local function CLUOptic(props: {
 			local updateState = table.clone(state)
 			for k, v in pairs(newState) do
 				if updateState[k] then
-					updateState[k].state = v
+					updateState[k].state = v.state
 				end
 			end
 			setState(updateState)

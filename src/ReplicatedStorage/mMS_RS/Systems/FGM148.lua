@@ -4,8 +4,8 @@
 
 ]]
 
-local UIS = game:GetService("UserInputService")
 local RS = game:GetService("ReplicatedStorage")
+local RUS = game:GetService("RunService")
 local mMS_RS = RS:WaitForChild("mMS_RS")
 local Packages = RS:WaitForChild("Packages")
 local Modules = mMS_RS:WaitForChild("Modules")
@@ -51,6 +51,9 @@ local BINDS: {[string]: Enum.KeyCode} = {
     ["FOV"] = Enum.KeyCode.G,
 }
 
+--wide is 4x, narrow is 9x
+local WIDE_FOV = 70/4
+local NARROW_FOV = 70/9
 
 local plr = game.Players.LocalPlayer
 local char = plr.Character or plr.CharacterAdded:Wait()
@@ -70,11 +73,17 @@ type self = {
     indicators: {[string]: {image: string, state: boolean}},
     root: any,
     clu: ScreenGui,
-    OnStateUpdated: Signal.Signal<any>,
+    OnIndicatorsUpdated: Signal.Signal<{[string]: {image: string, state: boolean}}>,
     OnZoomToggled: Signal.Signal<boolean>,
+    
+    nv: Charm.Atom<boolean>,
 
-    state: {},
-    zoomed: boolean,
+    seeking: Charm.Atom<boolean>,
+
+    zoomed: Charm.Atom<boolean>,
+    zoomFov: Charm.Atom<number>,
+    
+    missilePath: Charm.Atom<string>,
 }
 
 export type FGM148System = typeof(setmetatable({} :: self, FGM148System)) & HandheldBase.HandheldBase
@@ -91,11 +100,19 @@ function FGM148System.new(args: {
     self._maid = Maid.new()
 
 
-    self.locker = TargetLocker.new()
-    self.OnStateUpdated = Signal.new()
+    self.locker = TargetLocker.new({char,self.object})
+    self.OnIndicatorsUpdated = Signal.new()
     self.OnZoomToggled = Signal.new()
     self.indicators = table.clone(INDICATOR_DEFAULTS)
-    self.zoomed = false
+
+    --guaranteed state vars on loadup
+    self.zoomed = Charm.atom(false)
+    self.seeking = Charm.atom(false)
+    self.zoomFov = Charm.atom(WIDE_FOV)
+
+    --not guaranteed state vars (but they R here for now.
+    self.missilePath = Charm.atom("TOP")
+    self.nv = Charm.atom(false)
 
     -- set up ray params: should ignore self and launcher
     self.rayParams = RaycastParams.new()
@@ -104,7 +121,7 @@ function FGM148System.new(args: {
 
 
     self._maid:GiveTask(self.locker)
-    self._maid:GiveTask(self.OnStateUpdated)
+    self._maid:GiveTask(self.OnIndicatorsUpdated)
     self._maid:GiveTask(self.OnZoomToggled)
     return self
 end
@@ -121,7 +138,7 @@ function FGM148System.Setup(self: FGM148System)
             e(CLUOptic,
             {
                 indicators = self.indicators,
-                updateSignal = self.OnStateUpdated,
+                updateSignal = self.OnIndicatorsUpdated,
                 zoomSignal = self.OnZoomToggled, 
             })
         }),PGui))
@@ -136,35 +153,58 @@ function FGM148System.Setup(self: FGM148System)
     end))
 
     self._maid:GiveTask(Mouse.RightDown:Connect(function()
-        self.zoomed = not self.zoomed
-        self.OnZoomToggled:Fire(self.zoomed)
+        self.zoomed(not self.zoomed())
     end))
 
 
     self._maid:GiveTask(Keyboard.KeyDown:Connect(function(key: Enum.KeyCode)
         if key == BINDS.Seek then
-            
+            self.seeking(true)
         elseif key == BINDS.FOV then
-            
+            self.zoomFov(self.zoomFov() == WIDE_FOV and NARROW_FOV or WIDE_FOV)
         elseif key == BINDS.Path then
-
+            self.missilePath(self.missilePath() == "TOP" and "DIR" or "TOP")
         elseif key == BINDS.NV then
-        
+            self.nv(not self.nv())
         end
     end))
 
     self._maid:GiveTask(Keyboard.KeyUp:Connect(function(key: Enum.KeyCode)
         if key == BINDS.Seek then
-            
+            self.seeking(false)
         end
+    end))
+
+
+    --handle seeking updates
+    self._maid:GiveTask(Charm.effect(function()
+        if self.seeking() then
+            print(self.seeking())
+            self._maid.seekConnection = RUS.RenderStepped:Connect(function(dt: number)
+
+            end)
+        else
+            self._maid.seekConnection = nil
+        end
+    end))
+
+    --handle indicator updates
+    self._maid:GiveTask(Charm.effect(function()
+        self.indicators.SEEK.state = self.seeking()
+        self.indicators.TOP.state = self.missilePath() == "TOP"
+        self.indicators.DIR.state = self.missilePath() == "DIR"
+        self.indicators.NIGHT.state = self.nv()
+        self.indicators.DAY.state = not self.nv()
+        self.indicators.WFOV.state = self.zoomFov() == WIDE_FOV
+        self.indicators.NFOV.state = self.zoomFov() == NARROW_FOV
+        self.OnIndicatorsUpdated:Fire(self.indicators)       
     end))
     --test code
     coroutine.resume(coroutine.create(function()
         while true do
             task.wait(0.5)
-            local key = next(INDICATOR_DEFAULTS)
             self.locker.UpdateLock:Fire(math.random())
-            self.OnStateUpdated:Fire({[key] = (math.random() > 0.5 and true or false)})
+ 
         end
     end))
 end
