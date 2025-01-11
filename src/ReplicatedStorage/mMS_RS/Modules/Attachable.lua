@@ -8,23 +8,24 @@ models yet to be created
 
 attachables must have:
 - Equippable (movable)
-- 
 
 ]]
 
--------------------------------------------------------------------
 
+-- paths & services -------------------------------------------------------
 local RS = game:GetService("ReplicatedStorage")
 local mMS_RS = RS:WaitForChild("mMS_RS")
 local Modules = mMS_RS:WaitForChild("Modules")
 local Packages = RS:WaitForChild("Packages")
-local Configs = mMS_RS:WaitForChild("Configs")
-local GlobalConfig = require(Configs:WaitForChild("GlobalConfig"))
+
+-- dependencies -----------------------------------------------------------
+local GlobalConfig = require(Modules:WaitForChild("GC"))
 local Types = require(Modules:WaitForChild("Types"))
 local _Signal = require(Packages:WaitForChild("Signal"))
 local Welder = require(Modules:WaitForChild("Welder"))
 local Maid = require(Modules:WaitForChild("Maid"))
--------------------------------------------------------------------
+
+---------------------------------------------------------------------------
 
 local Attachable = {}
 Attachable.__index = Attachable
@@ -36,6 +37,8 @@ type self = {
 	prompts: {[string]: ProximityPrompt},
 	fields: Types.AttachableFields,
 }
+
+export type Attachable = typeof(setmetatable({} :: self, Attachable))
 
 --defaults for the optional config
 local function ReturnDefaults(fields: Types.AttachableFields): Types.AttachableConfig
@@ -57,13 +60,7 @@ local function ReturnDefaults(fields: Types.AttachableFields): Types.AttachableC
 		interactionDistance = 8,	
 
 	}
-end	
-
-
-export type Attachable = typeof(setmetatable({} :: self, Attachable))
--------------------------------------------------------------------
-
--------------------------------------------------------------------
+end
 
 --- handle prompt creation boilerplate
 local function createPrompt(self: Attachable, parent: Attachment?, params: {

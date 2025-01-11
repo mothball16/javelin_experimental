@@ -1,9 +1,21 @@
+--!strict
+--[[
+component for making the frame thingy and yeah
+]]
+
+-- paths & services -------------------------------------------------------
 local RS = game:GetService("ReplicatedStorage")
 local mMS_RS = RS:WaitForChild("mMS_RS")
+
+-- dependencies -----------------------------------------------------------
 local React = require(RS:WaitForChild("Packages"):WaitForChild("ReactLua"))
 local UseMotion = require(mMS_RS:WaitForChild("Modules"):WaitForChild("UseMotion"))
 
+-- vars -------------------------------------------------------------------
 local e = React.createElement
+---------------------------------------------------------------------------
+
+
 local function LockVisual(props)
     local lockPercent, setLockPercent = React.useState(0)
     local scale, scaleMotor = UseMotion(0)
@@ -16,14 +28,14 @@ local function LockVisual(props)
                 AnchorPoint = anchor,
                 BackgroundColor3 = Color3.new(1, 1, 1),
                 BorderSizePixel = 0,
-                Size = scale:map(function(v) return UDim2.new(0,1,v/2,0) end),
+                Size = scale:map(function(v: number) return UDim2.new(0,1,v/2,0) end),
             }),
             e("Frame", {
                 Position = pos,
                 AnchorPoint = anchor,
                 BackgroundColor3 = Color3.new(1, 1, 1),
                 BorderSizePixel = 0,
-                Size = scale:map(function(v) return UDim2.new(v/2,0,0,1) end),
+                Size = scale:map(function(v: number) return UDim2.new(v/2,0,0,1) end),
             })
         ) 
     end

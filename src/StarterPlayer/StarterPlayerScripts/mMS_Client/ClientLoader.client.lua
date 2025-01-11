@@ -4,14 +4,16 @@
 load modules nyan !!!
 ]]
 
+-- paths & services -------------------------------------------------------
 local RS = game:GetService("ReplicatedStorage")
 local mMS_RS = RS:WaitForChild("mMS_RS")
-local _Packages = RS:WaitForChild("Packages")
-local _Modules = mMS_RS:WaitForChild("Modules")
+--local Packages = RS:WaitForChild("Packages")
+--local Modules = mMS_RS:WaitForChild("Modules")
 local Controllers = mMS_RS:WaitForChild("Controllers")
-
-
-
+-- dependencies -----------------------------------------------------------
+-- constants --------------------------------------------------------------
+-- vars -------------------------------------------------------------------
+---------------------------------------------------------------------------
 
 
 require(Controllers:WaitForChild("SysController")):Init()

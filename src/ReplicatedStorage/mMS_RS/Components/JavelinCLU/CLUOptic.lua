@@ -1,14 +1,21 @@
 --!strict
-local CLUFolder = script.Parent
-local RS = game:GetService("ReplicatedStorage")
-local Packages = RS:WaitForChild("Packages")
 
-local React = require(Packages.ReactLua)
-local Signal = require(Packages.Signal)
-local CLUIndicator = require(CLUFolder:WaitForChild("Indicator"))
+-- paths & services -------------------------------------------------------
+local RS = 				game:GetService("ReplicatedStorage")
+local Packages = 		RS:WaitForChild("Packages")
+local CLUFolder = 		script.Parent
 
-local BORDER_COLOR = Color3.fromRGB(0,0,0)
+-- dependencies -----------------------------------------------------------
+local React = 			require(Packages:WaitForChild("ReactLua"))
+local Signal = 			require(Packages:WaitForChild("Signal"))
+local CLUIndicator = 	require(CLUFolder:WaitForChild("Indicator"))
 
+-- constants --------------------------------------------------------------
+local BORDER_COLOR =	Color3.fromRGB(0,0,0)
+
+-- vars -------------------------------------------------------------------
+
+---------------------------------------------------------------------------
 
 --defined params to fix type checking bug (Maybe this is a good practice too Ion know)
 local function CLUOptic(props: {

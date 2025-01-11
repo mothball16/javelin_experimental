@@ -1,13 +1,19 @@
 --!strict
 
+-- paths & services -------------------------------------------------------
 local RS = game:GetService("ReplicatedStorage")
 local PS = game:GetService("Players")
 local mMS_RS = RS:WaitForChild("mMS_RS")
 local Packages = RS:WaitForChild("Packages")
 local Modules = mMS_RS:WaitForChild("Modules")
+
+-- dependencies -----------------------------------------------------------
 local Net = require(Packages:WaitForChild("Net"))
 local Types = require(Modules:WaitForChild("Types"))
 
+-- constants --------------------------------------------------------------
+-- vars -------------------------------------------------------------------
+---------------------------------------------------------------------------
 
 export type MissileUpdData = {
 	cf: CFrame,

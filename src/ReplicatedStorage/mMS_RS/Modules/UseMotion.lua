@@ -21,12 +21,17 @@ info for self:
 ]]
 
 
+-- paths & services -------------------------------------------------------
 local RS = game:GetService("ReplicatedStorage")
-local mMS_RS = RS:WaitForChild("mMS_RS")
 local Packages = RS:WaitForChild("Packages")
 local RunService = game:GetService("RunService")
-local react = require(Packages.ReactLua)
-local ripple = require(Packages.Ripple)
+
+-- dependencies -----------------------------------------------------------
+local react = require(Packages:WaitForChild("ReactLua"))
+local ripple = require(Packages:WaitForChild("Ripple"))
+
+---------------------------------------------------------------------------
+
 
 
 

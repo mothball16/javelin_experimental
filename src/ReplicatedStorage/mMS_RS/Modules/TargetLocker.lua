@@ -5,22 +5,28 @@
 - can establish and destory a lock, as well as make/update the corresponding lockvisuals
 ]]
 
-local RS = game:GetService("ReplicatedStorage")
-local mMS_RS = RS:WaitForChild("mMS_RS")
-local Packages = RS:WaitForChild("Packages")
-local Modules = mMS_RS:WaitForChild("Modules")
-local Components = mMS_RS:WaitForChild("Components")
-local Charm = require(Packages:WaitForChild("Charm"))
-local Signal = require(Packages:WaitForChild("Signal"))
-local React = require(Packages:WaitForChild("ReactLua"))
+
+-- paths & services ------------------------------------------------------------
+local RS =          game:GetService("ReplicatedStorage")
+local mMS_RS =      RS:WaitForChild("mMS_RS")
+local Packages =    RS:WaitForChild("Packages")
+local Modules =     mMS_RS:WaitForChild("Modules")
+local Components =  mMS_RS:WaitForChild("Components")
+
+-- dependencies ----------------------------------------------------------------
+local Charm =       require(Packages:WaitForChild("Charm"))
+local ReactCharm =  require(Packages:WaitForChild("ReactCharm"))
+local Signal =      require(Packages:WaitForChild("Signal"))
+local React =       require(Packages:WaitForChild("ReactLua"))
 local ReactRoblox = require(Packages:WaitForChild("ReactRoblox"))
-local LockVisual = require(Components:WaitForChild("FFOSys"):WaitForChild("LockVisual"))
-local Maid = require(Modules:WaitForChild("Maid"))
---------------------------------------------------------------------------
+local Maid =        require(Modules:WaitForChild("Maid"))
+local LockVisual =  require(Components:WaitForChild("FFOSys"):WaitForChild("LockVisual"))
+
+-- vars ------------------------------------------------------------------------
 local PGui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
 
---------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 --local Types = require(Modules:WaitForChild("Types"))
 
 local TargetLocker = {}
@@ -39,6 +45,7 @@ type self = {
 export type TargetLocker = typeof(setmetatable({} :: self, TargetLocker))
 
 function TargetLocker.new(ignore: {Instance})
+    warn("TODO: allow targetlocker to provide multiple lockvisuals otherwise this is just a shitty wrapper")
     local self = setmetatable({} :: self, TargetLocker)
     
     self.lockAtt = Charm.atom(nil :: Attachment?)
@@ -80,7 +87,7 @@ function TargetLocker.CreateLock(self: TargetLocker, origin: Vector3, target: Ve
         local att = Instance.new("Attachment",rayResult.Instance)
         self._maid:GiveTask(att)
         att.WorldPosition = rayResult.Position
-        self.lockAtt = att
+        self.lockAtt(att)
         return att
     end
     return nil
@@ -89,9 +96,9 @@ end
 
 
 function TargetLocker.DestroyLock(self: TargetLocker)
-    if self.lockAtt then 
-        self.lockAtt:Destroy() 
-        self.lockAtt = nil
+    if self.lockAtt() then 
+        (self.lockAtt() :: Attachment):Destroy() 
+        self.lockAtt(nil)
     end
 end
 

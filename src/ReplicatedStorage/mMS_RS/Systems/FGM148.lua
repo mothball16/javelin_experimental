@@ -1,32 +1,26 @@
 --!strict
 
---[[
 
-]]
+-- paths & services -----------------------------------------------------------------------
+local RS =              game:GetService("ReplicatedStorage")
+local RUS =             game:GetService("RunService")
+local mMS_RS =          RS:WaitForChild("mMS_RS")
+local Packages =        RS:WaitForChild("Packages")
+local Modules =         mMS_RS:WaitForChild("Modules")
+local Components =      mMS_RS:WaitForChild("Components")
 
-local RS = game:GetService("ReplicatedStorage")
-local RUS = game:GetService("RunService")
-local mMS_RS = RS:WaitForChild("mMS_RS")
-local Packages = RS:WaitForChild("Packages")
-local Modules = mMS_RS:WaitForChild("Modules")
-local Components = mMS_RS:WaitForChild("Components")
+-- dependencies ---------------------------------------------------------------------------
+local React =           require(Packages.ReactLua)
+local ReactRoblox =     require(Packages.ReactRoblox)
+local Signal =          require(Packages:WaitForChild("Signal"))
+local Input =           require(Packages:WaitForChild("Input"))
+local Charm =           require(Packages:WaitForChild("Charm"))
+local Maid =            require(Modules:WaitForChild("Maid"))
+local TargetLocker =    require(Modules:WaitForChild("TargetLocker"))
+local HandheldBase =    require(Modules:WaitForChild("HandheldBase"))
+local CLUOptic =        require(Components:WaitForChild("JavelinCLU"):WaitForChild("CLUOptic"))
 
-local React = require(Packages.ReactLua)
-local ReactRoblox = require(Packages.ReactRoblox)
-local Signal = require(Packages:WaitForChild("Signal"))
-local Input = require(Packages:WaitForChild("Input"))
-local Charm = require(Packages:WaitForChild("Charm"))
-local Maid = require(Modules:WaitForChild("Maid"))
-local TargetLocker = require(Modules:WaitForChild("TargetLocker"))
-local HandheldBase = require(Modules:WaitForChild("HandheldBase"))
-local CLUOptic = require(Components:WaitForChild("JavelinCLU"):WaitForChild("CLUOptic"))
-
-local e = React.createElement
-local Keyboard, Mouse = Input.Keyboard.new(), Input.Mouse.new()
-
---local WeaponComponent = require(Modules.WeaponComponent)
-----------------------------------------------------------------
-
+-- constants ------------------------------------------------------------------------------
 local INDICATOR_DEFAULTS =  {
     ["BCU_PLUS"] =  {image = "rbxassetid://89722159180463", state = false},
     ["CLU"] =       {image = "http://www.roblox.com/asset/?id=99363953262967", state = false},
@@ -51,17 +45,20 @@ local BINDS: {[string]: Enum.KeyCode} = {
     ["FOV"] = Enum.KeyCode.G,
 }
 
---wide is 4x, narrow is 9x
+--(wide is 4x, narrow is 9x)
 local WIDE_FOV = 70/4
 local NARROW_FOV = 70/9
+
+-- vars ------------------------------------------------------------------------------------
+local e = React.createElement
+local Keyboard, Mouse = Input.Keyboard.new(), Input.Mouse.new()
 
 local plr = game.Players.LocalPlayer
 local char = plr.Character or plr.CharacterAdded:Wait()
 local PGui = plr.PlayerGui
 local cam = game.Workspace.CurrentCamera
 
-----------------------------------------------------------------
-
+-------------------------------------------------------------------------------------------
 
 
 local FGM148System = {}
@@ -77,19 +74,16 @@ type self = {
     OnZoomToggled: Signal.Signal<boolean>,
     
     nv: Charm.Atom<boolean>,
-
     seeking: Charm.Atom<boolean>,
-
     zoomed: Charm.Atom<boolean>,
     zoomFov: Charm.Atom<number>,
-    
     missilePath: Charm.Atom<string>,
 }
 
 export type FGM148System = typeof(setmetatable({} :: self, FGM148System)) & HandheldBase.HandheldBase
 
 
---- initialize object and set up self. 
+--- initialize object and set up self
 function FGM148System.new(args: {
     object: Model,
 }): FGM148System
@@ -181,6 +175,10 @@ function FGM148System.Setup(self: FGM148System)
         if self.seeking() then
             print(self.seeking())
             self._maid.seekConnection = RUS.RenderStepped:Connect(function(dt: number)
+                if not self.locker.lockAtt() then
+                    self._maid.seekConnection = nil
+                    return
+                end
 
             end)
         else
@@ -198,14 +196,6 @@ function FGM148System.Setup(self: FGM148System)
         self.indicators.WFOV.state = self.zoomFov() == WIDE_FOV
         self.indicators.NFOV.state = self.zoomFov() == NARROW_FOV
         self.OnIndicatorsUpdated:Fire(self.indicators)       
-    end))
-    --test code
-    coroutine.resume(coroutine.create(function()
-        while true do
-            task.wait(0.5)
-            self.locker.UpdateLock:Fire(math.random())
- 
-        end
     end))
 end
 

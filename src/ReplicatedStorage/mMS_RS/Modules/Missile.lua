@@ -1,11 +1,32 @@
 --!strict
 
-
-local Missile = {}
+-- paths & services -------------------------------------------------
+local RUS = game:GetService("RunService")
+local RS = game:GetService("ReplicatedStorage")
 local HTTPS = game:GetService("HttpService")
 local TS = game:GetService("TweenService")
-local Types = require(script.Parent.Types)
+local mMS_RS = RS:WaitForChild("mMS_RS")
+local Modules = mMS_RS:WaitForChild("Modules")
+local Models = mMS_RS:WaitForChild("Models")
+local Configs = mMS_RS:WaitForChild("Configs")
 
+
+-- constants --------------------------------------------------------
+local PEAK_CALC_THETA = 60
+local PHASE_BREAKPOINT = 0.25
+local PREDICTION_CONFIDENCE = 0.02
+--local BUFFER_MIN = 0.05
+--local BUFFER_MAX = 0.25
+local FORWARD_TRACK = 50
+-- dependencies -----------------------------------------------------
+local Types = require(Modules.Types)
+local Maid = require(Modules:WaitForChild("Maid"))
+local ConfigDefaults = require(Configs:WaitForChild("Missiles"):WaitForChild("Defaults"))
+-- vars -------------------------------------------------------------
+
+
+---------------------------------------------------------------------
+local Missile = {}
 Missile.__index = Missile
 
 
@@ -37,24 +58,6 @@ type self = {
 
 
 export type Missile = typeof(setmetatable({} :: self, Missile))
--------------------------------------------------------------------
-local PEAK_CALC_THETA = 60
-local PHASE_BREAKPOINT = 0.25
-local PREDICTION_CONFIDENCE = 0.02
---local BUFFER_MIN = 0.05
---local BUFFER_MAX = 0.25
-local FORWARD_TRACK = 50
--------------------------------------------------------------------
-
-local RunService = game:GetService("RunService")
-
-local mMS_RS = game.ReplicatedStorage:WaitForChild("mMS_RS")
-local Modules = mMS_RS:WaitForChild("Modules")
-local Models = mMS_RS:WaitForChild("Models")
-local ConfigDefaults = require(mMS_RS:WaitForChild("Configs"):WaitForChild("Missiles"):WaitForChild("Defaults"))
-local Maid = require(Modules:WaitForChild("Maid"))
--------------------------------------------------------------------
-
 function Missile.new(fields: Types.MissileFields): Missile
 	local self = setmetatable({} :: self, Missile)
 	--set fields
@@ -151,7 +154,7 @@ function Missile.Init(self: Missile)
 		RayParams.FilterType = Enum.RaycastFilterType.Exclude
 
 		--set up acceleration
-		self.fields._maid.accelCon = RunService.Heartbeat:Connect(function(dt)
+		self.fields._maid.accelCon = RUS.Heartbeat:Connect(function(dt)
 			if not self.active then self.fields._maid.updateConnection = nil end
 			self.speed = self.speed + (self.fields.accel * dt)
 			self:UpdateForces()
@@ -165,7 +168,7 @@ function Missile.Init(self: Missile)
 		
 
 		--set up Hit detection
-		self.fields._maid.castCon = RunService.Heartbeat:Connect(function()
+		self.fields._maid.castCon = RUS.Heartbeat:Connect(function()
 			local direction = (self.main.Position - self.lastPos).Unit
 			local mag = (self.main.Position - self.lastPos).Magnitude
 

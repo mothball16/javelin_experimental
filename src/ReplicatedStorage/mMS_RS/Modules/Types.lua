@@ -1,12 +1,19 @@
 --!strict
 
-local module = {}
+-- paths & services -------------------------------------------------------
 local RS = game:GetService("ReplicatedStorage")
 local mMS_RS = RS:WaitForChild("mMS_RS")
 local Modules = mMS_RS:WaitForChild("Modules")
 local Packages = RS:WaitForChild("Packages")
+
+-- dependencies -----------------------------------------------------------
 local Signal = require(Packages:WaitForChild("Signal"))
 local Maid = require(Modules:WaitForChild("Maid"))
+
+---------------------------------------------------------------------------
+local module = {}
+
+
 
 
 

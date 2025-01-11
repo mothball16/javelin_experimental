@@ -1,5 +1,7 @@
 --!strict
 
+-- paths & services -------------------------------------------------------
+
 local HTTPS = game:GetService("HttpService")
 local RS = game:GetService("ReplicatedStorage")
 local PS = game:GetService("Players")
@@ -7,16 +9,18 @@ local mMS_RS = RS:WaitForChild("mMS_RS")
 local Packages = RS:WaitForChild("Packages")
 local Modules = mMS_RS:WaitForChild("Modules")
 
+-- dependencies -----------------------------------------------------------
 local Maid = require(Modules:WaitForChild("Maid"))
 local Types = require(Modules:WaitForChild("Types"))
 local Attachable = require(Modules:WaitForChild("Attachable"))
 local Welder = require(Modules:WaitForChild("Welder"))
 
-----------------------------------------------------------------------
+-- constants --------------------------------------------------------------
 local ATT_FOLDER = mMS_RS:WaitForChild("Models"):WaitForChild("Attachables")
 local ATT_CONFIGS = mMS_RS:WaitForChild("Configs"):WaitForChild("Attachables")
-----------------------------------------------------------------------
 local DEBUG_MODE = true
+
+---------------------------------------------------------------------------
 
 local AttachableService = {
 	Name = "AttachableService",
