@@ -22,7 +22,6 @@ local function Indicator(props)
 			damping = 0.3,
 		})
 
-		print(scale)
 	end,{props.visible})
 
 	return React.createElement("ImageLabel",{
