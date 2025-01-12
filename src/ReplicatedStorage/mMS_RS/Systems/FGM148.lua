@@ -76,7 +76,7 @@ type self = {
     nv: Charm.Atom<boolean>,
     seeking: Charm.Atom<boolean>,
     zoomed: Charm.Atom<boolean>,
-    zoomFov: Charm.Atom<number>,
+    zoomType: Charm.Atom<string>,
     missilePath: Charm.Atom<string>,
 }
 
@@ -89,12 +89,16 @@ function FGM148System.new(args: {
 }): FGM148System
     local self = setmetatable(HandheldBase.new({
         object = args.object,
-    --    state = args.object:FindFirstChild("mMS_State") :: Folder
     }) :: FGM148System, FGM148System)
     self._maid = Maid.new()
 
 
-    self.locker = TargetLocker.new({char,self.object})
+    -- create rayparams
+    self.rayParams = RaycastParams.new()
+    self.rayParams.FilterDescendantsInstances = {args.object, char}
+    self.rayParams.FilterType = Enum.RaycastFilterType.Exclude
+
+    --setup signals
     self.OnIndicatorsUpdated = Signal.new()
     self.OnZoomToggled = Signal.new()
     self.indicators = table.clone(INDICATOR_DEFAULTS)
@@ -102,40 +106,51 @@ function FGM148System.new(args: {
     --guaranteed state vars on loadup
     self.zoomed = Charm.atom(false)
     self.seeking = Charm.atom(false)
-    self.zoomFov = Charm.atom(WIDE_FOV)
+    self.zoomType = Charm.atom("wide")
 
     --not guaranteed state vars (but they R here for now.
     self.missilePath = Charm.atom("TOP")
     self.nv = Charm.atom(false)
 
-    -- set up ray params: should ignore self and launcher
-    self.rayParams = RaycastParams.new()
-    self.rayParams.FilterDescendantsInstances = {char, self.object}
-    self.rayParams.FilterType = Enum.RaycastFilterType.Exclude
+
+    self.locker = TargetLocker.new({
+        rayParams = self.rayParams,
+        checkWall = true,
+        checkDist = 2000,
+        lockTime = 5,
+    })
+
+
+    -- set up the CLU
+    self.root = ReactRoblox.createRoot(Instance.new("Folder"))
+    self.root:render(ReactRoblox.createPortal(e(
+     "ScreenGui",{
+         IgnoreGuiInset = true
+     },{
+         e(CLUOptic,
+         {
+             indicators = self.indicators,
+             updateSignal = self.OnIndicatorsUpdated,
+             visible = self.zoomed, 
+             zoomType = self.zoomType,
+             seeking = self.seeking,
+         })
+     }),PGui))
 
 
     self._maid:GiveTask(self.locker)
     self._maid:GiveTask(self.OnIndicatorsUpdated)
     self._maid:GiveTask(self.OnZoomToggled)
+
+
+
     return self
 end
 
 
 --- set up connections to create functionality
 function FGM148System.Setup(self: FGM148System)
-    -- set up the CLU
-    self.root = ReactRoblox.createRoot(Instance.new("Folder"))
-    self.root:render(ReactRoblox.createPortal(e(
-        "ScreenGui",{
-            IgnoreGuiInset = true
-        },{
-            e(CLUOptic,
-            {
-                indicators = self.indicators,
-                updateSignal = self.OnIndicatorsUpdated,
-                zoomSignal = self.OnZoomToggled, 
-            })
-        }),PGui))
+   
     
     self._maid:GiveTask(function()
         self.root:unmount()
@@ -153,9 +168,11 @@ function FGM148System.Setup(self: FGM148System)
 
     self._maid:GiveTask(Keyboard.KeyDown:Connect(function(key: Enum.KeyCode)
         if key == BINDS.Seek then
-            self.seeking(true)
+            if self.locker:CreateLock(char.Head.Position, char.Head.Position + cam.CFrame.LookVector.Unit * 1000) then
+                self.seeking(true)
+            end
         elseif key == BINDS.FOV then
-            self.zoomFov(self.zoomFov() == WIDE_FOV and NARROW_FOV or WIDE_FOV)
+            self.zoomType(self.zoomType() == "wide" and "narrow" or "wide")
         elseif key == BINDS.Path then
             self.missilePath(self.missilePath() == "TOP" and "DIR" or "TOP")
         elseif key == BINDS.NV then
@@ -166,6 +183,7 @@ function FGM148System.Setup(self: FGM148System)
     self._maid:GiveTask(Keyboard.KeyUp:Connect(function(key: Enum.KeyCode)
         if key == BINDS.Seek then
             self.seeking(false)
+            self.locker:DestroyLock()
         end
     end))
 
@@ -173,8 +191,8 @@ function FGM148System.Setup(self: FGM148System)
     --handle seeking updates
     self._maid:GiveTask(Charm.effect(function()
         if self.seeking() then
-            print(self.seeking())
             self._maid.seekConnection = RUS.RenderStepped:Connect(function(dt: number)
+                self.locker:Update()
                 if not self.locker.lockAtt() then
                     self._maid.seekConnection = nil
                     return
@@ -193,8 +211,8 @@ function FGM148System.Setup(self: FGM148System)
         self.indicators.DIR.state = self.missilePath() == "DIR"
         self.indicators.NIGHT.state = self.nv()
         self.indicators.DAY.state = not self.nv()
-        self.indicators.WFOV.state = self.zoomFov() == WIDE_FOV
-        self.indicators.NFOV.state = self.zoomFov() == NARROW_FOV
+        self.indicators.WFOV.state = self.zoomType() == "wide"
+        self.indicators.NFOV.state = self.zoomType() == "narrow"
         self.OnIndicatorsUpdated:Fire(self.indicators)       
     end))
 end

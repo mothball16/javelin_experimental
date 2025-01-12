@@ -9,7 +9,7 @@ local Packages = RS:WaitForChild("Packages")
 -- dependencies -----------------------------------------------------------
 local Signal = require(Packages:WaitForChild("Signal"))
 local Maid = require(Modules:WaitForChild("Maid"))
-
+local Charm = require(Packages:WaitForChild("Charm"))
 ---------------------------------------------------------------------------
 local module = {}
 
@@ -110,6 +110,14 @@ export type AttachableConfig = {
 	equipTime: number?,
 	detachTime: number?,
 	interactionDistance: number?,
+}
+
+export type TargetLockerConfig = {
+	rayParams: RaycastParams,
+	zone: Frame?,
+	checkWall: boolean,
+	checkDist: number,
+	lockTime: number,
 }
 
 

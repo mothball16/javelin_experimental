@@ -1,12 +1,13 @@
 local config = {
 
-  --If you for any reason already have an attribute named mothballMissileSystem then rename this to something other than mothballMissileSystem
-  Identification = "mothballMissileSystem",
-
   MissileMaxLifeTime = 30,
   MissileReplicationDelay = 0.1, --Changing this may reduce network load but also will make missiles appear choppier/delayed on other clients
 
   
+  ---compatibility
+  defaultFov = 70, --If your game's default FOV is set to something other than 70 here, set it here
+  Identification = "mothballMissileSystem",
+
 
 
 

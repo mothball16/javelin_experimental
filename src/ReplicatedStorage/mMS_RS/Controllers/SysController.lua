@@ -3,28 +3,28 @@
 This controller requests the creation and deletion of missile systems
 ]]
 
+-- paths & services -------------------------------------------------------
+local RS = 			game:GetService("ReplicatedStorage")
+local Packages = 	RS:WaitForChild("Packages")
+local mMS_RS = 		RS:WaitForChild("mMS_RS")
+local Modules = 	mMS_RS:WaitForChild("Modules")
+local Systems = 	mMS_RS:WaitForChild("Systems")
+local Client = 		Modules:WaitForChild("Client")
 
+-- dependencies -----------------------------------------------------------
+local State = 			require(Client:WaitForChild("SharedState"))
+local Types = 			require(Modules:WaitForChild("Types"))
+local Maid = 			require(Modules:WaitForChild("Maid"))
+local GlobalConfig = 	require(Modules:WaitForChild("GC"))
+local Charm = 			require(Packages:WaitForChild("Charm"))
 
+-- constants --------------------------------------------------------------
 
-local RS = game:GetService("ReplicatedStorage")
-local Packages = RS:WaitForChild("Packages")
-local mMS_RS = RS:WaitForChild("mMS_RS")
-local Modules = mMS_RS:WaitForChild("Modules")
-local Systems = mMS_RS:WaitForChild("Systems")
-local Client = Modules:WaitForChild("Client")
-local State = require(Client:WaitForChild("SharedState"))
-local Types = require(Modules:WaitForChild("Types"))
-local Maid = require(Modules:WaitForChild("Maid"))
-local GlobalConfig = require(Modules:WaitForChild("GC"))
-local Charm = require(Packages:WaitForChild("Charm"))
-
-local SystemCache: {[string]: Types.MissileSystem} = {}
-------------------------------------------------------------------
---plr references
+-- vars -------------------------------------------------------------------
 local player = game.Players.LocalPlayer
 
-
-------------------------------------------------------------------
+---------------------------------------------------------------------------
+local SystemCache: {[string]: Types.MissileSystem} = {}
 
 local SysController = {
 	Name = "SysController",

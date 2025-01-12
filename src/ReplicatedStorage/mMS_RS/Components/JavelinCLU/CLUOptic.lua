@@ -1,14 +1,21 @@
 --!strict
 
+
+-- prop drilling depth 1
+
+
 -- paths & services -------------------------------------------------------
 local RS = 				game:GetService("ReplicatedStorage")
 local Packages = 		RS:WaitForChild("Packages")
 local CLUFolder = 		script.Parent
 
 -- dependencies -----------------------------------------------------------
+local Charm = 			require(Packages:WaitForChild("Charm"))
 local React = 			require(Packages:WaitForChild("ReactLua"))
 local Signal = 			require(Packages:WaitForChild("Signal"))
 local CLUIndicator = 	require(CLUFolder:WaitForChild("Indicator"))
+local FOVMask =         require(CLUFolder:WaitForChild("FOVMask"))
+local UseAtom = 		require(Packages:WaitForChild("ReactCharm")).useAtom
 
 -- constants --------------------------------------------------------------
 local BORDER_COLOR =	Color3.fromRGB(0,0,0)
@@ -21,10 +28,34 @@ local BORDER_COLOR =	Color3.fromRGB(0,0,0)
 local function CLUOptic(props: {
 	indicators: {[string]: {image: string, state: boolean}},
 	updateSignal: Signal.Signal<any>,
-	zoomSignal: Signal.Signal<boolean>,
+	visible: Charm.Atom<boolean>,
+	zoomType: Charm.Atom<string>,
+	seeking: Charm.Atom<boolean>,
 })
+	local state, setState = React.useState(table.clone(props.indicators))
+	local vis = UseAtom(props.visible)
+
 	local children = {
+		Mask = React.createElement(FOVMask,{
+			visible = props.visible,
+			zoomType = props.zoomType,
+			seeking = props.seeking,
+		}),
+
+
 		Ratio = React.createElement("UIAspectRatioConstraint",{}),
+
+		SightBorders = React.createElement("ImageLabel",{
+			AnchorPoint = Vector2.new(0.5,0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Name = "HUD",
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1,0,1,0),
+			Image = "rbxassetid://107048180741183",
+			ScaleType = Enum.ScaleType.Stretch,
+		}),
+
+
 		Borders = React.createElement("Frame",{
 			BackgroundTransparency = 1,
 			Size = UDim2.fromScale(1, 1)
@@ -59,8 +90,7 @@ local function CLUOptic(props: {
 		}),
 	}
 
-	local state, setState = React.useState(table.clone(props.indicators))
-	local vis, setVis = React.useState(false)
+
 
 	for k,v in pairs(props.indicators) do
 		children[k] = React.createElement(CLUIndicator,{
@@ -72,6 +102,7 @@ local function CLUOptic(props: {
 		})
 	end
 	
+
 	React.useEffect(function()
 		local connection = props.updateSignal:Connect(function(newState)
 			local updateState = table.clone(state)
@@ -88,24 +119,13 @@ local function CLUOptic(props: {
 		end
 	end)
 
-	React.useEffect(function()
-		local connection = props.zoomSignal:Connect(function(newState)
-			setVis(newState)
-		end)
 
-		return function()
-			connection:Disconnect()
-		end
-	end)
-
-	return React.createElement("ImageLabel",{
+	return React.createElement("Frame",{
 		AnchorPoint = Vector2.new(0.5,0.5),
 		Position = UDim2.fromScale(0.5, 0.5),
-		Name = "HUD",
+		Name = "Main",
 		BackgroundTransparency = 1,
 		Size = UDim2.new(0.9,0,1.2,0),
-		Image = "rbxassetid://107048180741183",
-		ScaleType = Enum.ScaleType.Stretch,
 		Visible = vis,
 	}, {children})
 end
