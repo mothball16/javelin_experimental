@@ -41,7 +41,7 @@ local function FOVMask(props: Types.FOVMaskProps)
 		if frame.current then
 			local connection = (frame.current):GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
 				props.bounds({
-					pos = frame.current.AbsolutePosition,
+					pos = frame.current.AbsolutePosition + Vector2.new(0,game:GetService("GuiService"):GetGuiInset().Y),
 					size = frame.current.AbsoluteSize
 				})
 			end)
@@ -55,7 +55,7 @@ local function FOVMask(props: Types.FOVMaskProps)
 		if frame.current then
 			local connection = (frame.current):GetPropertyChangedSignal("AbsolutePosition"):Connect(function()
 				props.bounds({
-					pos = frame.current.AbsolutePosition,
+					pos = frame.current.AbsolutePosition + Vector2.new(0,game:GetService("GuiService"):GetGuiInset().Y),
 					size = frame.current.AbsoluteSize
 				})
 			end)

@@ -38,7 +38,6 @@ local function CLUOptic(props: {
 	local state, setState = React.useState(table.clone(props.indicators))
 	local vis = UseAtom(props.visible)
 
-	warn("(CLUOptic) WARNING BAD!!!! cluoptic is only being used as an intermediary to pass props to FOVMask!!!!")
 	local children = {
 		Ratio = e("UIAspectRatioConstraint",{}),
 		FOVMask = props.Mask,

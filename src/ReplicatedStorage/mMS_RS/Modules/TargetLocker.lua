@@ -54,7 +54,6 @@ export type TargetLocker = typeof(setmetatable({} :: self, TargetLocker))
 
 
 function TargetLocker.new(config: Types.TargetLockerConfig)
-    warn("TODO: allow targetlocker to provide multiple lockvisuals otherwise this is just a shitty wrapper")
     local self = setmetatable({
         lockAtt = Charm.atom(nil :: Attachment?),
         lockPct = Charm.atom(0),

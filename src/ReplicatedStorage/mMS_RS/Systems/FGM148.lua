@@ -73,7 +73,7 @@ type self = {
     rayParams: RaycastParams,
     indicators: {[string]: {image: string, state: boolean}},
     root: any,
-    clu: ScreenGui,
+    gui: ScreenGui?,
     OnIndicatorsUpdated: Signal.Signal<{[string]: {image: string, state: boolean}}>,
     OnZoomToggled: Signal.Signal<boolean>,
     
@@ -113,7 +113,7 @@ function FGM148System.new(args: {
     self.seeking = Charm.atom(false)
     self.zoomType = Charm.atom("wide")
     self.bounds = Charm.atom({pos = Vector2.new(), size = Vector2.new()})
-
+    self.gui = nil
     --not guaranteed state vars (but they R here for now.
     self.missilePath = Charm.atom("TOP")
     self.nv = Charm.atom(false)
@@ -129,15 +129,11 @@ function FGM148System.new(args: {
     })
 
 
-    Charm.subscribe(self.bounds, function()
-
-    end)
-
     -- set up the CLU
     self.root = ReactRoblox.createRoot(Instance.new("Folder"))
     self.root:render(ReactRoblox.createPortal(e(
      "ScreenGui",{
-         IgnoreGuiInset = true
+        IgnoreGuiInset = true
      },{
          e(CLUOptic,
          {
@@ -176,11 +172,13 @@ end
 --- set up connections to create functionality
 function FGM148System.Setup(self: FGM148System)
     
-
+    --eventually cleanup the root when the javelin is unequipped
     self._maid:GiveTask(function()
         self.root:unmount()
     end)
+
     
+    --fire/zoom
     self._maid:GiveTask(Mouse.LeftDown:Connect(function()
         print("leftDown")
     end))
@@ -189,6 +187,8 @@ function FGM148System.Setup(self: FGM148System)
         self.zoomed(not self.zoomed())
     end))
 
+
+    --keyboard inputs
     self._maid:GiveTask(Keyboard.KeyDown:Connect(function(key: Enum.KeyCode)
         if key == BINDS.Seek then
             if self.locker:CreateLock(char.Head.Position, cam.CFrame.LookVector.Unit * 1000) then
@@ -210,11 +210,7 @@ function FGM148System.Setup(self: FGM148System)
         end
     end))
 
-    --[[
-    --handle lock bound updates
-    self._maid:GiveTask(Charm.effect(function()
-        
-    end))]]
+
 
     --handle seeking updates
     self._maid:GiveTask(Charm.effect(function()
