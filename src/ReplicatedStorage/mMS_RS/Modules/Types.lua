@@ -114,10 +114,30 @@ export type AttachableConfig = {
 
 export type TargetLockerConfig = {
 	rayParams: RaycastParams,
-	zone: Frame?,
-	checkWall: boolean,
-	checkDist: number,
+	maxDist: number?,
 	lockTime: number,
+	bounds: Charm.Atom<{pos: Vector2, size: Vector2}>?,
+		--ignoreWalls: boolean,
+
+}
+
+export type LockVisualProps = {
+	pct: Charm.Atom<number>,
+	pos: Charm.Atom<UDim2>,
+	from: UDim2?,
+	to: UDim2?,
+}
+export type FOVMaskProps = {
+	visible: Charm.Atom<boolean>,
+	zoomType: Charm.Atom<string>,
+	seeking: Charm.Atom<boolean>,
+	bounds: Charm.Atom<{pos: Vector2, size: Vector2}>,
+	
+}
+
+export type CrosshairProps = {
+	pct: Charm.Atom<number>,
+	pos: Charm.Atom<UDim2>,
 }
 
 

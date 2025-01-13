@@ -39,6 +39,7 @@ type self = {
     lockAtt: Charm.Atom<Attachment?>,
     lockPct: Charm.Atom<number>,
     lockPos: Charm.Atom<UDim2>,
+
     
     lastTick: number,
     root: any,
@@ -58,7 +59,7 @@ function TargetLocker.new(config: Types.TargetLockerConfig)
         lockAtt = Charm.atom(nil :: Attachment?),
         lockPct = Charm.atom(0),
         lockPos = Charm.atom(UDim2.new(0,0,0,0)),
-
+        
         config = config,
         _maid = Maid.new(),
         OnLockEnded = Signal.new(),
@@ -95,7 +96,7 @@ function TargetLocker.new(config: Types.TargetLockerConfig)
 end
 
 function TargetLocker.CreateLock(self: TargetLocker, from: Vector3, to: Vector3): Attachment?
-    local result = self:Check(from, to)
+    local result = self:Check(from, to,UDim2.fromOffset(cam.ViewportSize.X/2, cam.ViewportSize.Y/2))
     if not result then
         return nil
     end
@@ -108,13 +109,16 @@ function TargetLocker.CreateLock(self: TargetLocker, from: Vector3, to: Vector3)
 end
 
 function TargetLocker.GetPosOnScreen(self: TargetLocker): UDim2
-    assert(self.lockAtt(), "this method isn't supposed to be called without an existing attachment!")
+    local DEFAULT_UDIM = UDim2.fromOffset(-9999999, -9999999)
+    if not self.lockAtt() then
+        return DEFAULT_UDIM
+    end
     local pos, onScreen = cam:WorldToViewportPoint((self.lockAtt() :: Attachment).WorldPosition)
 
 
     return onScreen 
     and UDim2.fromOffset(pos.X, pos.Y) 
-    or UDim2.fromOffset(-99999, -99999)
+    or DEFAULT_UDIM
 end
 
 
@@ -129,11 +133,41 @@ end
 --- determine whether the lock still fits within the valid params
 --- @param from Vector3 - the origin of the ray
 --- @param to Vector3 - the target of the ray
---- @return Success (boolean), Result (RaycastResult)
-function TargetLocker.Check(self: TargetLocker, from: Vector3, to: Vector3): RaycastResult
-    local rayResult = game.Workspace:Raycast(from,to - from,self.config.rayParams)
-    if self.config.zone then
+--- @return result (RaycastResult)
+function TargetLocker.Check(self: TargetLocker, from: Vector3, to: Vector3, checkPos: UDim2?): RaycastResult?
+    local rayResult = game.Workspace:Raycast(from,to,self.config.rayParams)
+    local posOnScreen = checkPos or self:GetPosOnScreen()
+
+    --if its not on screen you cant lock on it bozo
+    if not posOnScreen then 
+        return nil 
+    end
+
+
+    --easy magnitude check
+    if self.config.maxDist then
+        if (from - rayResult.Position).Magnitude > self.config.maxDist then
+            return nil
+        end
+    end
+--[[
+    if not self.config.ignoreWalls then
         
+    end]]
+
+    --check within cam bounds
+    if self.config.bounds then
+        local bounds = self.config.bounds()
+        print(posOnScreen, bounds)
+        if 
+            posOnScreen.X.Offset < bounds.pos.X or
+            posOnScreen.X.Offset > bounds.pos.X + bounds.size.X or
+            posOnScreen.Y.Offset < bounds.pos.Y or
+            posOnScreen.Y.Offset > bounds.pos.Y + bounds.size.Y 
+        then
+            print("BREAK HERE")
+            return nil
+        end
     end
 
     return rayResult

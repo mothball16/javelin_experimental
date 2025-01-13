@@ -8,18 +8,22 @@ local mMS_RS =          RS:WaitForChild("mMS_RS")
 local Packages =        RS:WaitForChild("Packages")
 local Modules =         mMS_RS:WaitForChild("Modules")
 local Components =      mMS_RS:WaitForChild("Components")
-
+local CLUFolder =       Components:WaitForChild("JavelinCLU")
 -- dependencies ---------------------------------------------------------------------------
 local React =           require(Packages.ReactLua)
 local ReactRoblox =     require(Packages.ReactRoblox)
+
 local Signal =          require(Packages:WaitForChild("Signal"))
 local Input =           require(Packages:WaitForChild("Input"))
 local Charm =           require(Packages:WaitForChild("Charm"))
 local Maid =            require(Modules:WaitForChild("Maid"))
+local Types =           require(Modules:WaitForChild("Types"))
 local TargetLocker =    require(Modules:WaitForChild("TargetLocker"))
 local HandheldBase =    require(Modules:WaitForChild("HandheldBase"))
-local CLUOptic =        require(Components:WaitForChild("JavelinCLU"):WaitForChild("CLUOptic"))
 
+local CLUOptic =        require(CLUFolder:WaitForChild("CLUOptic"))
+local Crosshair = 		require(CLUFolder:WaitForChild("Crosshair"))
+local FOVMask =         require(CLUFolder:WaitForChild("FOVMask"))
 -- constants ------------------------------------------------------------------------------
 local INDICATOR_DEFAULTS =  {
     ["BCU_PLUS"] =  {image = "rbxassetid://89722159180463", state = false},
@@ -78,6 +82,7 @@ type self = {
     zoomed: Charm.Atom<boolean>,
     zoomType: Charm.Atom<string>,
     missilePath: Charm.Atom<string>,
+    bounds: Charm.Atom<{pos: Vector2, size: Vector2}>,
 }
 
 export type FGM148System = typeof(setmetatable({} :: self, FGM148System)) & HandheldBase.HandheldBase
@@ -107,19 +112,26 @@ function FGM148System.new(args: {
     self.zoomed = Charm.atom(false)
     self.seeking = Charm.atom(false)
     self.zoomType = Charm.atom("wide")
+    self.bounds = Charm.atom({pos = Vector2.new(), size = Vector2.new()})
 
     --not guaranteed state vars (but they R here for now.
     self.missilePath = Charm.atom("TOP")
     self.nv = Charm.atom(false)
+        
 
 
     self.locker = TargetLocker.new({
         rayParams = self.rayParams,
         checkWall = true,
-        checkDist = 2000,
+        maxDist = 2000,
         lockTime = 5,
+        bounds = self.bounds,
     })
 
+
+    Charm.subscribe(self.bounds, function()
+
+    end)
 
     -- set up the CLU
     self.root = ReactRoblox.createRoot(Instance.new("Folder"))
@@ -132,9 +144,22 @@ function FGM148System.new(args: {
              indicators = self.indicators,
              updateSignal = self.OnIndicatorsUpdated,
              visible = self.zoomed, 
-             zoomType = self.zoomType,
-             seeking = self.seeking,
-         })
+
+             
+
+             Mask = e(FOVMask,{
+                zoomType = self.zoomType,
+                visible = self.zoomed,
+                seeking = self.seeking,
+                bounds = self.bounds,
+             })
+             
+         }),
+
+         Crosshair = e(Crosshair,{
+            pos = self.locker.lockPos,
+            pct = self.locker.lockPct,
+         }),
      }),PGui))
 
 
@@ -150,13 +175,12 @@ end
 
 --- set up connections to create functionality
 function FGM148System.Setup(self: FGM148System)
-   
     
+
     self._maid:GiveTask(function()
         self.root:unmount()
     end)
     
-
     self._maid:GiveTask(Mouse.LeftDown:Connect(function()
         print("leftDown")
     end))
@@ -165,10 +189,9 @@ function FGM148System.Setup(self: FGM148System)
         self.zoomed(not self.zoomed())
     end))
 
-
     self._maid:GiveTask(Keyboard.KeyDown:Connect(function(key: Enum.KeyCode)
         if key == BINDS.Seek then
-            if self.locker:CreateLock(char.Head.Position, char.Head.Position + cam.CFrame.LookVector.Unit * 1000) then
+            if self.locker:CreateLock(char.Head.Position, cam.CFrame.LookVector.Unit * 1000) then
                 self.seeking(true)
             end
         elseif key == BINDS.FOV then
@@ -187,17 +210,30 @@ function FGM148System.Setup(self: FGM148System)
         end
     end))
 
+    --[[
+    --handle lock bound updates
+    self._maid:GiveTask(Charm.effect(function()
+        
+    end))]]
 
     --handle seeking updates
     self._maid:GiveTask(Charm.effect(function()
         if self.seeking() then
             self._maid.seekConnection = RUS.RenderStepped:Connect(function(dt: number)
-                self.locker:Update()
-                if not self.locker.lockAtt() then
-                    self._maid.seekConnection = nil
-                    return
-                end
+                local lockAtt = self.locker.lockAtt()
+                if lockAtt then
 
+                    if self.locker:Check(char.Head.Position, (lockAtt.WorldPosition - char.Head.Position).Unit * self.locker.config.maxDist :: number) then
+                        self.locker:Update()
+                    else
+                        print("unlocked!!! check failed")
+                        self.seeking(false)
+                        self.locker:DestroyLock()
+                        self._maid.seekConnection = nil 
+                    end
+                else
+                    self._maid.seekConnection = nil
+                end
             end)
         else
             self._maid.seekConnection = nil

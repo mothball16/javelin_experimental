@@ -24,10 +24,16 @@ local e = React.createElement
 ---------------------------------------------------------------------------
 
 
-local function LockVisual(props:{
+local function LockVisual(props: {
     pct: Charm.Atom<number>,
-    pos: Charm.Atom<UDim2>
+    pos: Charm.Atom<UDim2>,
+    from: UDim2?,
+    to: UDim2?,
 })
+
+    props.from = props.from or UDim2.fromScale(0.08,1)
+    props.to = props.to or UDim2.fromScale(0.01, 1)
+    assert(props.from and props.to, "props.from or props.to doesn't exisst")
     local pct = UseAtom(props.pct)
     local pos = UseAtom(props.pos)
 
@@ -54,9 +60,8 @@ local function LockVisual(props:{
         ) 
     end
     
-    
     local children = {
-        Ratio = React.createElement("UIAspectRatioConstraint",{
+        Ratio = e("UIAspectRatioConstraint",{
             AspectRatio = 1
         }),
         TL = createCornerEdge(Vector2.new(0,0), UDim2.fromScale(0,0)),
@@ -75,7 +80,7 @@ local function LockVisual(props:{
         Name = "LockFrame",
         BackgroundTransparency = 1,
         Position = UDim2.fromOffset(pos.X.Offset,pos.Y.Offset),
-        Size = UDim2.fromScale(0.08, 1),
+        Size = props.from:Lerp(props.to, pct),
         AnchorPoint = Vector2.new(0.5,0.5),
         Visible = true,
     }, children)

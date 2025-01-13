@@ -6,17 +6,21 @@
 
 -- paths & services -------------------------------------------------------
 local RS = 				game:GetService("ReplicatedStorage")
+local mMS_RS =			RS:WaitForChild("mMS_RS")
 local Packages = 		RS:WaitForChild("Packages")
+local Modules = 		mMS_RS:WaitForChild("Modules")
 local CLUFolder = 		script.Parent
 
 -- dependencies -----------------------------------------------------------
 local Charm = 			require(Packages:WaitForChild("Charm"))
 local React = 			require(Packages:WaitForChild("ReactLua"))
 local Signal = 			require(Packages:WaitForChild("Signal"))
+local Types =			 require(Modules:WaitForChild("Types"))
 local CLUIndicator = 	require(CLUFolder:WaitForChild("Indicator"))
 local FOVMask =         require(CLUFolder:WaitForChild("FOVMask"))
+local Crosshair = 		require(CLUFolder:WaitForChild("Crosshair"))
 local UseAtom = 		require(Packages:WaitForChild("ReactCharm")).useAtom
-
+local e = 				React.createElement
 -- constants --------------------------------------------------------------
 local BORDER_COLOR =	Color3.fromRGB(0,0,0)
 
@@ -29,23 +33,16 @@ local function CLUOptic(props: {
 	indicators: {[string]: {image: string, state: boolean}},
 	updateSignal: Signal.Signal<any>,
 	visible: Charm.Atom<boolean>,
-	zoomType: Charm.Atom<string>,
-	seeking: Charm.Atom<boolean>,
+	Mask: React.ReactElement<any,any>, 
 })
 	local state, setState = React.useState(table.clone(props.indicators))
 	local vis = UseAtom(props.visible)
 
+	warn("(CLUOptic) WARNING BAD!!!! cluoptic is only being used as an intermediary to pass props to FOVMask!!!!")
 	local children = {
-		Mask = React.createElement(FOVMask,{
-			visible = props.visible,
-			zoomType = props.zoomType,
-			seeking = props.seeking,
-		}),
-
-
-		Ratio = React.createElement("UIAspectRatioConstraint",{}),
-
-		SightBorders = React.createElement("ImageLabel",{
+		Ratio = e("UIAspectRatioConstraint",{}),
+		FOVMask = props.Mask,
+		SightBorders = e("ImageLabel",{
 			AnchorPoint = Vector2.new(0.5,0.5),
 			Position = UDim2.fromScale(0.5, 0.5),
 			Name = "HUD",
@@ -53,34 +50,37 @@ local function CLUOptic(props: {
 			Size = UDim2.new(1,0,1,0),
 			Image = "rbxassetid://107048180741183",
 			ScaleType = Enum.ScaleType.Stretch,
+			ZIndex = 0,
 		}),
 
 
-		Borders = React.createElement("Frame",{
+
+
+		Borders = e("Frame",{
 			BackgroundTransparency = 1,
 			Size = UDim2.fromScale(1, 1)
 			
 		},{
-			Left = React.createElement("Frame",{
+			Left = e("Frame",{
 				BorderSizePixel = 0,
 				AnchorPoint = Vector2.new(1,0),
 				Position = UDim2.fromScale(0,0),
 				Size = UDim2.fromScale(1,1),
 				BackgroundColor3 = BORDER_COLOR
 			}),
-			Right = React.createElement("Frame",{
+			Right = e("Frame",{
 				BorderSizePixel = 0,
 				Position = UDim2.fromScale(1,0),
 				Size = UDim2.fromScale(1,1),
 				BackgroundColor3 = BORDER_COLOR
 			}),
-			Bottom = React.createElement("Frame",{
+			Bottom = e("Frame",{
 				BorderSizePixel = 0,
 				Position = UDim2.fromScale(-5,1),
 				Size = UDim2.fromScale(10,1),
 				BackgroundColor3 = BORDER_COLOR
 			}),
-			Top = React.createElement("Frame",{
+			Top = e("Frame",{
 				BorderSizePixel = 0,
 				AnchorPoint = Vector2.new(0,1),
 				Position = UDim2.fromScale(-5,0),
@@ -93,7 +93,7 @@ local function CLUOptic(props: {
 
 
 	for k,v in pairs(props.indicators) do
-		children[k] = React.createElement(CLUIndicator,{
+		children[k] = e(CLUIndicator,{
 			Name = k,
 			image = v.image,
 			visible = state[k].state,
@@ -120,7 +120,7 @@ local function CLUOptic(props: {
 	end)
 
 
-	return React.createElement("Frame",{
+	return e("Frame",{
 		AnchorPoint = Vector2.new(0.5,0.5),
 		Position = UDim2.fromScale(0.5, 0.5),
 		Name = "Main",

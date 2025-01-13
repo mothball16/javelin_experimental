@@ -10,6 +10,7 @@ local RS = game:GetService("ReplicatedStorage")
 local mMS_RS = RS:WaitForChild("mMS_RS")
 local React = require(RS:WaitForChild("Packages"):WaitForChild("ReactLua"))
 local UseMotion = require(mMS_RS:WaitForChild("Modules"):WaitForChild("UseMotion"))
+local e = React.createElement
 
 
 local function Indicator(props: {
@@ -36,10 +37,9 @@ local function Indicator(props: {
 			friction = 0.2,
 			mass = 0.05,
 		})
-
 	end,{props.visible})
 
-	return React.createElement("ImageLabel",{
+	return e("ImageLabel",{
 		BackgroundTransparency = 1,
 		Size = UDim2.fromScale(1,1),
 		ImageTransparency = scale,
