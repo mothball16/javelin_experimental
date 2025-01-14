@@ -4,14 +4,16 @@ Handles the creation and replication of missiles from the client side.
 ]]
 
 
-local RS = game:GetService("ReplicatedStorage")
-local mMS_RS = RS:WaitForChild("mMS_RS")
-local Modules = mMS_RS:WaitForChild("Modules")
-local Packages = RS:WaitForChild("Packages")
-local Missile = require(Modules:WaitForChild("Missile"))
-local Types = require(Modules:WaitForChild("Types"))
-local Net = require(Packages:WaitForChild("Net"))
-local GlobalConfig = require(Modules:WaitForChild("GC"))
+local RS = 				game:GetService("ReplicatedStorage")
+local Packages = 		RS:WaitForChild("Packages")
+local mMS_RS = 			RS:WaitForChild("mMS_RS")
+local Modules = 		mMS_RS:WaitForChild("Modules")
+
+local Types = 			require(Modules:WaitForChild("Types"))
+local Missile = 		require(Modules:WaitForChild("Missile"))
+local GlobalConfig = 	require(Modules:WaitForChild("GC"))
+
+local Net = 			require(Packages:WaitForChild("Net"))
 
 
 local MissileUpdates: {[string]: {

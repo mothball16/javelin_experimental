@@ -1,9 +1,9 @@
 --!strict
 
 --[[
-- composition for any locking mechanism
-- can establish and destory a lock, as well as make/update the corresponding lockvisuals
-- This is a container component for any LockVisuals.
+- Reusable logic for any target-locking shenanigans
+
+
 ]]
 
 
@@ -16,7 +16,6 @@ local Components =  mMS_RS:WaitForChild("Components")
 
 -- dependencies ----------------------------------------------------------------
 local Charm =       require(Packages:WaitForChild("Charm"))
-local ReactCharm =  require(Packages:WaitForChild("ReactCharm"))
 local Signal =      require(Packages:WaitForChild("Signal"))
 local React =       require(Packages:WaitForChild("ReactLua"))
 local ReactRoblox = require(Packages:WaitForChild("ReactRoblox"))
@@ -138,12 +137,11 @@ function TargetLocker.Check(self: TargetLocker, from: Vector3, to: Vector3, chec
     local posOnScreen = checkPos or self:GetPosOnScreen()
 
     --if its not on screen you cant lock on it bozo
-    if not posOnScreen then 
+    if not posOnScreen or not rayResult then 
         return nil 
     end
 
-
-    --easy magnitude check
+    --simple magnitude check
     if self.config.maxDist then
         if (from - rayResult.Position).Magnitude > self.config.maxDist then
             return nil

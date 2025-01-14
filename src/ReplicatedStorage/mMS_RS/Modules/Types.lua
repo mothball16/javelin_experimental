@@ -32,7 +32,7 @@ export type MissileFields = MissileConfig & {
 	--GUID for missile registry
 	identifier: string?,
 	--Unpaid intern
-	_maid: Maid.Maid,
+	_maid: Maid.Maid?,
 }
 
 

@@ -3,9 +3,11 @@ local config = {
   MissileMaxLifeTime = 30,
   MissileReplicationDelay = 0.1, --Changing this may reduce network load but also will make missiles appear choppier/delayed on other clients
 
+  -- When aimed in, the optic will move at <aimDeltaMult> times the usual camera sensitivity
+  aimDeltaMult = 0.5,
   
-  ---compatibility
-  defaultFov = 70, --If your game's default FOV is set to something other than 70 here, set it here
+   --If your game's default FOV is set to something other than 70 here, set it here
+  defaultFOV = 70,
   Identification = "mothballMissileSystem",
 
 

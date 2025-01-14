@@ -21,8 +21,8 @@ local UseMotion = require(Modules:WaitForChild("UseMotion"))
 
 -- vars -------------------------------------------------------------------
 local e = React.createElement
----------------------------------------------------------------------------
-
+-- constants --------------------------------------------------------------
+local LINE_THICKNESS = 4
 
 local function LockVisual(props: {
     pct: Charm.Atom<number>,
@@ -36,26 +36,40 @@ local function LockVisual(props: {
     assert(props.from and props.to, "props.from or props.to doesn't exisst")
     local pct = UseAtom(props.pct)
     local pos = UseAtom(props.pos)
-
+    local trans, transMotor = UseMotion(0)
     local scale, scaleMotor = UseMotion(0)
 
     local function createCornerEdge(anchor: Vector2, pos: UDim2)
         return e(
             React.Fragment,
             nil,
+            --vert
             e("Frame", {
                 Position = pos,
                 AnchorPoint = anchor,
                 BackgroundColor3 = Color3.new(1, 1, 1),
-                BorderSizePixel = 0,
-                Size = scale:map(function(v: number) return UDim2.new(0,1,v/2,0) end),
+                BorderSizePixel = 1,
+                Size = scale:map(function(v: number) return UDim2.new(0,LINE_THICKNESS,0.1 + v/8,0) end),
+                ZIndex = 2
             }),    
+
+            --horiz
             e("Frame", {
                 Position = pos,
                 AnchorPoint = anchor,
                 BackgroundColor3 = Color3.new(1, 1, 1),
+                BorderSizePixel = 1,
+                Size = scale:map(function(v: number) return UDim2.new(0.1 + v/8,0,0,LINE_THICKNESS) end),
+            }),
+
+            --fix clipping (scuffed fix)
+            e("Frame",{
+                Position = pos,
+                AnchorPoint = anchor,
+                BackgroundColor3 = Color3.new(1, 1, 1),
                 BorderSizePixel = 0,
-                Size = scale:map(function(v: number) return UDim2.new(v/2,0,0,1) end),
+                Size = scale:map(function(v: number) return UDim2.new(0.1 + v/8,0,0,LINE_THICKNESS) end),
+                ZIndex = 3
             })
         ) 
     end
@@ -70,6 +84,13 @@ local function LockVisual(props: {
         BL = createCornerEdge(Vector2.new(0,1), UDim2.fromScale(0,1)),
     }
        
+
+
+
+
+
+
+    
     scaleMotor:spring(pct, {
         damping = 0.7,
         mass = 0.1,
@@ -82,7 +103,7 @@ local function LockVisual(props: {
         Position = UDim2.fromOffset(pos.X.Offset,pos.Y.Offset),
         Size = props.from:Lerp(props.to, pct),
         AnchorPoint = Vector2.new(0.5,0.5),
-        Visible = true,
+        Visible = props.pct() > 0,
     }, children)
 end
 

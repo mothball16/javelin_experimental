@@ -26,7 +26,7 @@ local ZOOM_TYPES = {
 	},
 	["narrow"] = {
 		ratio = 1,
-		width = 0.225,
+		width = 0.375/1.5,
 	}
 }
 

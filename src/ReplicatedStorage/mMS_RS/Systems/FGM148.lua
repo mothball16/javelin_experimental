@@ -8,23 +8,32 @@ local mMS_RS =          RS:WaitForChild("mMS_RS")
 local Packages =        RS:WaitForChild("Packages")
 local Modules =         mMS_RS:WaitForChild("Modules")
 local Components =      mMS_RS:WaitForChild("Components")
+local Controllers =     mMS_RS:WaitForChild("Controllers")
+local Client =          Modules:WaitForChild("Client")
 local CLUFolder =       Components:WaitForChild("JavelinCLU")
 -- dependencies ---------------------------------------------------------------------------
 local React =           require(Packages.ReactLua)
 local ReactRoblox =     require(Packages.ReactRoblox)
 
+local Signals =         require(Client:WaitForChild("Signals"))
 local Signal =          require(Packages:WaitForChild("Signal"))
 local Input =           require(Packages:WaitForChild("Input"))
+local Net =             require(Packages:WaitForChild("Net"))
 local Charm =           require(Packages:WaitForChild("Charm"))
 local Maid =            require(Modules:WaitForChild("Maid"))
 local Types =           require(Modules:WaitForChild("Types"))
 local TargetLocker =    require(Modules:WaitForChild("TargetLocker"))
 local HandheldBase =    require(Modules:WaitForChild("HandheldBase"))
+local MissileControl =  require(Controllers:WaitForChild("MissileController"))
+local GlobalConfig =    require(Modules:WaitForChild("GC"))
 
 local CLUOptic =        require(CLUFolder:WaitForChild("CLUOptic"))
 local Crosshair = 		require(CLUFolder:WaitForChild("Crosshair"))
 local FOVMask =         require(CLUFolder:WaitForChild("FOVMask"))
+local NFOVStadia =      require(CLUFolder:WaitForChild("NFOVStadia"))
+local WFOVStadia =      require(CLUFolder:WaitForChild("WFOVStadia"))
 -- constants ------------------------------------------------------------------------------
+local MSL_TYPE =    "FGM148"
 local INDICATOR_DEFAULTS =  {
     ["BCU_PLUS"] =  {image = "rbxassetid://89722159180463", state = false},
     ["CLU"] =       {image = "http://www.roblox.com/asset/?id=99363953262967", state = false},
@@ -69,11 +78,10 @@ local FGM148System = {}
 FGM148System.__index = FGM148System
 
 type self = {
-    locker: TargetLocker.TargetLocker,
+    Targeter: TargetLocker.TargetLocker,
     rayParams: RaycastParams,
     indicators: {[string]: {image: string, state: boolean}},
     root: any,
-    gui: ScreenGui?,
     OnIndicatorsUpdated: Signal.Signal<{[string]: {image: string, state: boolean}}>,
     OnZoomToggled: Signal.Signal<boolean>,
     
@@ -83,6 +91,8 @@ type self = {
     zoomType: Charm.Atom<string>,
     missilePath: Charm.Atom<string>,
     bounds: Charm.Atom<{pos: Vector2, size: Vector2}>,
+
+    firePart: BasePart,
 }
 
 export type FGM148System = typeof(setmetatable({} :: self, FGM148System)) & HandheldBase.HandheldBase
@@ -97,6 +107,7 @@ function FGM148System.new(args: {
     }) :: FGM148System, FGM148System)
     self._maid = Maid.new()
 
+    self.firePart = self.object:FindFirstChild("FirePart") :: BasePart
 
     -- create rayparams
     self.rayParams = RaycastParams.new()
@@ -113,14 +124,14 @@ function FGM148System.new(args: {
     self.seeking = Charm.atom(false)
     self.zoomType = Charm.atom("wide")
     self.bounds = Charm.atom({pos = Vector2.new(), size = Vector2.new()})
-    self.gui = nil
+
     --not guaranteed state vars (but they R here for now.
     self.missilePath = Charm.atom("TOP")
     self.nv = Charm.atom(false)
         
 
-
-    self.locker = TargetLocker.new({
+    --set up the locking system
+    self.Targeter = TargetLocker.new({
         rayParams = self.rayParams,
         checkWall = true,
         maxDist = 2000,
@@ -129,7 +140,18 @@ function FGM148System.new(args: {
     })
 
 
-    -- set up the CLU
+    self._maid:GiveTask(self.Targeter)
+    self._maid:GiveTask(self.OnIndicatorsUpdated)
+    self._maid:GiveTask(self.OnZoomToggled)
+
+
+
+    return self
+end
+
+
+function FGM148System.InitInterface(self: FGM148System)
+-- set up the CLU
     self.root = ReactRoblox.createRoot(Instance.new("Folder"))
     self.root:render(ReactRoblox.createPortal(e(
      "ScreenGui",{
@@ -141,7 +163,13 @@ function FGM148System.new(args: {
              updateSignal = self.OnIndicatorsUpdated,
              visible = self.zoomed, 
 
-             
+             nfovStadia = e(NFOVStadia, {
+                zoomType = self.zoomType,
+             }),
+            
+             wfovStadia = e(WFOVStadia, {
+                zoomType = self.zoomType,
+             }),
 
              Mask = e(FOVMask,{
                 zoomType = self.zoomType,
@@ -153,45 +181,44 @@ function FGM148System.new(args: {
          }),
 
          Crosshair = e(Crosshair,{
-            pos = self.locker.lockPos,
-            pct = self.locker.lockPct,
+            pos = self.Targeter.lockPos,
+            pct = self.Targeter.lockPct,
          }),
      }),PGui))
 
+        --handle indicator updates
+    self._maid:GiveTask(Charm.effect(function()
+        self.indicators.SEEK.state = self.Targeter.lockPct() >= 1
+        self.indicators.TOP.state = self.missilePath() == "TOP"
+        self.indicators.DIR.state = self.missilePath() == "DIR"
+        self.indicators.NIGHT.state = self.nv()
+        self.indicators.DAY.state = not self.nv()
+        self.indicators.WFOV.state = self.zoomType() == "wide"
+        self.indicators.NFOV.state = self.zoomType() == "narrow"
+        self.OnIndicatorsUpdated:Fire(self.indicators)       
+    end))
 
-    self._maid:GiveTask(self.locker)
-    self._maid:GiveTask(self.OnIndicatorsUpdated)
-    self._maid:GiveTask(self.OnZoomToggled)
-
-
-
-    return self
-end
-
-
---- set up connections to create functionality
-function FGM148System.Setup(self: FGM148System)
-    
     --eventually cleanup the root when the javelin is unequipped
     self._maid:GiveTask(function()
         self.root:unmount()
     end)
 
-    
-    --fire/zoom
-    self._maid:GiveTask(Mouse.LeftDown:Connect(function()
-        print("leftDown")
-    end))
+end
 
+--- set up connections to create functionality
+function FGM148System.Setup(self: FGM148System)
+    self:InitInterface()
+
+    --connect fire/zoom (mouse button stuff)
+    self._maid:GiveTask(Mouse.LeftDown:Connect(self:Fire()))
     self._maid:GiveTask(Mouse.RightDown:Connect(function()
         self.zoomed(not self.zoomed())
     end))
 
-
-    --keyboard inputs
+    --connect inputs
     self._maid:GiveTask(Keyboard.KeyDown:Connect(function(key: Enum.KeyCode)
         if key == BINDS.Seek then
-            if self.locker:CreateLock(char.Head.Position, cam.CFrame.LookVector.Unit * 1000) then
+            if self.Targeter:CreateLock(char.Head.Position, cam.CFrame.LookVector.Unit * 1000) then
                 self.seeking(true)
             end
         elseif key == BINDS.FOV then
@@ -206,25 +233,36 @@ function FGM148System.Setup(self: FGM148System)
     self._maid:GiveTask(Keyboard.KeyUp:Connect(function(key: Enum.KeyCode)
         if key == BINDS.Seek then
             self.seeking(false)
-            self.locker:DestroyLock()
+            self.Targeter:DestroyLock()
         end
     end))
 
-
+    --automatically change FOV when zoomed/zoomType is changed
+    self._maid:GiveTask(Charm.effect(function()
+        if self.zoomed() then
+            if self.zoomType() == "wide" then
+                cam.FieldOfView = WIDE_FOV
+            else
+                cam.FieldOfView = NARROW_FOV
+            end
+        else
+            cam.FieldOfView = GlobalConfig.defaultFOV
+        end
+    end))
 
     --handle seeking updates
     self._maid:GiveTask(Charm.effect(function()
         if self.seeking() then
             self._maid.seekConnection = RUS.RenderStepped:Connect(function(dt: number)
-                local lockAtt = self.locker.lockAtt()
+                local lockAtt = self.Targeter.lockAtt()
                 if lockAtt then
 
-                    if self.locker:Check(char.Head.Position, (lockAtt.WorldPosition - char.Head.Position).Unit * self.locker.config.maxDist :: number) then
-                        self.locker:Update()
+                    if self.Targeter:Check(char.Head.Position, (lockAtt.WorldPosition - char.Head.Position).Unit * self.Targeter.config.maxDist :: number) then
+                        self.Targeter:Update()
                     else
                         print("unlocked!!! check failed")
                         self.seeking(false)
-                        self.locker:DestroyLock()
+                        self.Targeter:DestroyLock()
                         self._maid.seekConnection = nil 
                     end
                 else
@@ -235,25 +273,34 @@ function FGM148System.Setup(self: FGM148System)
             self._maid.seekConnection = nil
         end
     end))
-
-    --handle indicator updates
-    self._maid:GiveTask(Charm.effect(function()
-        self.indicators.SEEK.state = self.seeking()
-        self.indicators.TOP.state = self.missilePath() == "TOP"
-        self.indicators.DIR.state = self.missilePath() == "DIR"
-        self.indicators.NIGHT.state = self.nv()
-        self.indicators.DAY.state = not self.nv()
-        self.indicators.WFOV.state = self.zoomType() == "wide"
-        self.indicators.NFOV.state = self.zoomType() == "narrow"
-        self.OnIndicatorsUpdated:Fire(self.indicators)       
-    end))
 end
 
 function FGM148System.Destroy(self: FGM148System)
+    self.zoomed(false)
     self._maid:DoCleaning()
     --self.clu:Destroy()
 end
 
+
+function FGM148System.Fire(self: FGM148System)
+    local lockAtt = self.Targeter.lockAtt()
+    if lockAtt and self.Targeter.lockPct() >= 1 then
+        local passAtt = lockAtt:Clone()
+        passAtt.Parent = lockAtt.Parent
+        
+
+        --[[
+        MissileControl:RegisterMissile({
+            origin = self.object.Main.Front.WorldPosition,
+            initOrient = missileTube.Main.Front.WorldCFrame,
+            target = lockAtt.WorldPosition,
+            att = passAtt,
+            model = "FGM148"
+        })]]
+        
+        --local missile = MRC:RegisterMissile(data)
+    end
+end
 
 
 

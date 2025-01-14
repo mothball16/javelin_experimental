@@ -26,7 +26,6 @@ local function Crosshair(props: Types.CrosshairProps)
 	local pos = UseAtom(props.pos)
 
 	React.useEffect(function(): () 
-		print("pluh!!!")
 		if pct <= 0 or pct >= 1 then
 			transMotor:spring(1 - pct)
 		else

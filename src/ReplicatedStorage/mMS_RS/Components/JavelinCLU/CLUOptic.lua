@@ -15,12 +15,12 @@ local CLUFolder = 		script.Parent
 local Charm = 			require(Packages:WaitForChild("Charm"))
 local React = 			require(Packages:WaitForChild("ReactLua"))
 local Signal = 			require(Packages:WaitForChild("Signal"))
-local Types =			 require(Modules:WaitForChild("Types"))
+local Types =			require(Modules:WaitForChild("Types"))
 local CLUIndicator = 	require(CLUFolder:WaitForChild("Indicator"))
-local FOVMask =         require(CLUFolder:WaitForChild("FOVMask"))
-local Crosshair = 		require(CLUFolder:WaitForChild("Crosshair"))
 local UseAtom = 		require(Packages:WaitForChild("ReactCharm")).useAtom
 local e = 				React.createElement
+
+
 -- constants --------------------------------------------------------------
 local BORDER_COLOR =	Color3.fromRGB(0,0,0)
 
@@ -34,6 +34,8 @@ local function CLUOptic(props: {
 	updateSignal: Signal.Signal<any>,
 	visible: Charm.Atom<boolean>,
 	Mask: React.ReactElement<any,any>, 
+	nfovStadia: React.ReactElement<any,any>,
+	wfovStadia: React.ReactElement<any,any>,
 })
 	local state, setState = React.useState(table.clone(props.indicators))
 	local vis = UseAtom(props.visible)
@@ -41,6 +43,8 @@ local function CLUOptic(props: {
 	local children = {
 		Ratio = e("UIAspectRatioConstraint",{}),
 		FOVMask = props.Mask,
+		nfovStadia = props.nfovStadia,
+		wfovStadia = props.wfovStadia,
 		SightBorders = e("ImageLabel",{
 			AnchorPoint = Vector2.new(0.5,0.5),
 			Position = UDim2.fromScale(0.5, 0.5),
@@ -52,7 +56,7 @@ local function CLUOptic(props: {
 			ZIndex = 0,
 		}),
 
-
+		
 
 
 		Borders = e("Frame",{

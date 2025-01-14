@@ -64,7 +64,7 @@ function Missile.new(fields: Types.MissileFields): Missile
 	self.fields = fields
 	self.fields.identifier = HTTPS:GenerateGUID()
 	self.fields._maid = Maid.new()
-
+	assert(self.fields._maid)
 	setmetatable(self.fields,{__index = ConfigDefaults})
 	
 	
@@ -133,6 +133,8 @@ end
 --- add missile functionality (isn't called for replicated missiles)
 function Missile.Init(self: Missile)
 	assert(self.fields.initSpeed :: number, "initSpeed not defined.")
+	assert(self.fields._maid)
+
 	--set up the movers
 	self.main.Anchored = false
 
@@ -359,6 +361,7 @@ end
 
 --- destroys maid (should clean up everything !)
 function Missile.Destroy(self: Missile)
+	assert(self.fields._maid)
 	self.fields._maid:DoCleaning()
 end
 
