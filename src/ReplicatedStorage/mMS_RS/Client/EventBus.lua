@@ -13,17 +13,22 @@ local Signal = require(Packages:WaitForChild("Signal"))
 local Types = require(Modules:WaitForChild("Types"))
 
 
-local EventBus: Types.EventBus = {
-    --missilecontroller input
+local EventBus = {
     Missile = {
+        --for telling the server you did x, y, z...
         SendCreationRequest = Signal.new(),
-        SendUpdateRequest = Signal.new(),
         SendDestroyRequest = Signal.new(),
+        --removed, missileHandler should be doing any update logic internally
+        --SendUpdateRequest = Signal.new(),
 
+
+        --on replication connections
         OnFired = Signal.new(),
         OnUpdated = Signal.new(),
         OnDestroyed = Signal.new(),
     },
+
+
     Generic = {},
 }
 

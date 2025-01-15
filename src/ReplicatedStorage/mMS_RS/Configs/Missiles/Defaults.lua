@@ -4,7 +4,7 @@ local Types = require(game:GetService("ReplicatedStorage"):WaitForChild("mMS_RS"
 local module: Types.MissileConfig = {
 	iterations = 10,
 	peak = 0,
-	initTime = 0,
+	initTime = 0.5,
 	maxSpeed = 300,
 	accel = 100,
 

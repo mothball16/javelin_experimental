@@ -20,10 +20,12 @@ local Input =           require(Packages:WaitForChild("Input"))
 --local Net =             require(Packages:WaitForChild("Net"))
 local Charm =           require(Packages:WaitForChild("Charm"))
 local Maid =            require(Modules:WaitForChild("Maid"))
---local Types =           require(Modules:WaitForChild("Types"))
+local Types =           require(Modules:WaitForChild("Types"))
 local TargetLocker =    require(Modules:WaitForChild("TargetLocker"))
 local HandheldBase =    require(Modules:WaitForChild("HandheldBase"))
 local GlobalConfig =    require(Modules:WaitForChild("GC"))
+
+local MissileConfig =   require(mMS_RS:WaitForChild("Configs"):WaitForChild("Missiles"):WaitForChild("FGM-148 Warhead"))
 
 local CLUOptic =        require(CLUFolder:WaitForChild("CLUOptic"))
 local Crosshair = 		require(CLUFolder:WaitForChild("Crosshair"))
@@ -31,7 +33,7 @@ local FOVMask =         require(CLUFolder:WaitForChild("FOVMask"))
 local NFOVStadia =      require(CLUFolder:WaitForChild("NFOVStadia"))
 local WFOVStadia =      require(CLUFolder:WaitForChild("WFOVStadia"))
 -- constants ------------------------------------------------------------------------------
-local MSL_TYPE =    "FGM148"
+local MSL_TYPE =    "FGM-148 Warhead"
 local INDICATOR_DEFAULTS =  {
     ["BCU_PLUS"] =  {image = "rbxassetid://89722159180463", state = false},
     ["CLU"] =       {image = "http://www.roblox.com/asset/?id=99363953262967", state = false},
@@ -62,6 +64,7 @@ local NARROW_FOV = 70/9
 
 -- vars ------------------------------------------------------------------------------------
 local e = React.createElement
+
 local Keyboard, Mouse = Input.Keyboard.new(), Input.Mouse.new()
 
 local plr = game.Players.LocalPlayer
@@ -133,7 +136,7 @@ function FGM148System.new(args: {
         rayParams = self.rayParams,
         checkWall = true,
         maxDist = 2000,
-        lockTime = 5,
+        lockTime = 0.5,
         bounds = self.bounds,
     })
 
@@ -258,7 +261,7 @@ function FGM148System.Setup(self: FGM148System)
                 if lockAtt then
 
                     if self.Targeter:Check(char.Head.Position, (lockAtt.WorldPosition - char.Head.Position).Unit * self.Targeter.config.maxDist :: number) then
-                        self.Targeter:Update()
+                        self.Targeter:Update(dt)
                     else
                         print("unlocked!!! check failed")
                         self.seeking(false)
@@ -287,18 +290,18 @@ function FGM148System.Fire(self: FGM148System)
     if lockAtt and self.Targeter.lockPct() >= 1 then
         local passAtt = lockAtt:Clone()
         passAtt.Parent = lockAtt.Parent
-        
 
-        --[[
-        MissileControl:RegisterMissile({
-            origin = self.object.Main.Front.WorldPosition,
-            initOrient = missileTube.Main.Front.WorldCFrame,
-            target = lockAtt.WorldPosition,
-            att = passAtt,
-            model = "FGM148"
-        })]]
-        
-        --local missile = MRC:RegisterMissile(data)
+        local fields = MissileConfig({
+            attackDir = self.missilePath() :: "TOP" | "DIR",
+            dist = (self.firePart.Position - lockAtt.WorldPosition).Magnitude
+        }) :: Types.MissileFields
+        fields.origin = self.firePart.Position
+        fields.initOrient = self.firePart.CFrame
+        fields.target = lockAtt.WorldPosition
+        fields.att = passAtt
+        fields.model = MSL_TYPE
+
+        EventBus.Missile.SendCreationRequest:Fire(fields)
     end
 end
 

@@ -155,7 +155,6 @@ function TargetLocker.Check(self: TargetLocker, from: Vector3, to: Vector3, chec
     --check within cam bounds
     if self.config.bounds then
         local bounds = self.config.bounds()
-        print(posOnScreen, bounds)
         if 
             posOnScreen.X.Offset < bounds.pos.X or
             posOnScreen.X.Offset > bounds.pos.X + bounds.size.X or
@@ -171,10 +170,10 @@ function TargetLocker.Check(self: TargetLocker, from: Vector3, to: Vector3, chec
 end
 
 ---update the atoms in the
-function TargetLocker.Update(self: TargetLocker)
+function TargetLocker.Update(self: TargetLocker, dt: number)
     Charm.batch(function()  
         self.lockPos(self:GetPosOnScreen())
-        self.lockPct(math.clamp(self.lockPct() + 0.005,0,1))
+        self.lockPct(math.clamp(self.lockPct() + dt / self.config.lockTime,0,1))
     end)
    
 end

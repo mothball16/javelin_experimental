@@ -8,12 +8,11 @@ local TS = game:GetService("TweenService")
 local mMS_RS = RS:WaitForChild("mMS_RS")
 local Modules = mMS_RS:WaitForChild("Modules")
 local Models = mMS_RS:WaitForChild("Models")
+local MissileModels = Models:WaitForChild("Missiles")
 local Configs = mMS_RS:WaitForChild("Configs")
 
 
 -- constants --------------------------------------------------------
-local PEAK_CALC_THETA = 60
-local PHASE_BREAKPOINT = 0.25
 local PREDICTION_CONFIDENCE = 0.02
 --local BUFFER_MIN = 0.05
 --local BUFFER_MAX = 0.25
@@ -58,6 +57,13 @@ type self = {
 
 
 export type Missile = typeof(setmetatable({} :: self, Missile))
+
+
+
+local function numLerp(a: number, b: number, t: number): number
+	return a + (b - a) * t
+end
+
 function Missile.new(fields: Types.MissileFields): Missile
 	local self = setmetatable({} :: self, Missile)
 	--set fields
@@ -80,10 +86,7 @@ function Missile.new(fields: Types.MissileFields): Missile
 	self.progress = 0
 	self.lifetime = 0
 	self.active = false
-	self.object = Models:FindFirstChild(fields.model):Clone()
-	
-	--get peak altitude
-	self.fields.peak = math.min(self.fields.peak :: number, math.tan(math.rad(PEAK_CALC_THETA)) * (self:GetDist() * PHASE_BREAKPOINT))
+	self.object = MissileModels:FindFirstChild(fields.model):Clone()
 	self.connections = {}
 	
 	--set vars
@@ -98,6 +101,7 @@ function Missile.new(fields: Types.MissileFields): Missile
 	assert(self.initVel and self.mainRot and self.mainVel, "something is missing: InitVel, MainVel, MainRot")
 	
 	
+
 
 
 	--sloppy function override
@@ -187,6 +191,8 @@ function Missile.Init(self: Missile)
 		self.initVel.Enabled = false
 		self.mainVel.Enabled = true
 		self.active = true
+
+		print(self)
 		self:LaunchFX()
 	end))
 	
@@ -238,26 +244,19 @@ function Missile.PredictIntercept(self: Missile): (Vector3, number)
 	return interceptPos, timeToTarget
 end
 
-
---- modeled after https://www.desmos.com/calculator/l2kb4axhr4
+--- find the Y value the missile wants to be at. 
+--- this is able to be overridden from outside, so we pass origin and target too
+--- PredictIntercept can also be overridden... but why?
 --- @param progress number - number between 0 and 1 as to the X value in the desmos graph
 --- @return number
-function Missile.GetDesiredAltitude(self: Missile, progress: number): number
-	assert(self.fields.peak :: number, "self.fields.peak isn't a number?")
-
-	progress = math.clamp(progress,0,1)
-	if progress < PHASE_BREAKPOINT then
-		return (math.sin(2 * math.pi * progress)^0.5 * self.fields.peak) + self.fields.origin.Y
-	else
-		return (math.sin((2 * math.pi) / 3 * (progress + 0.5)) * self.fields.peak) + self.target.Y
-	end
+function Missile.GetDesiredAltitude(self: Missile, progress: number, origin: Vector3, target: Vector3): number
+	return numLerp(origin.Y, target.Y, progress)
 end
 
 
 --- update the movers to point and move in the given direction (I suck at Physics !!)
 --- @param dir CFrame - direction to point the missile towards. mainVel will take the lookvector * speed, mainRot will point to dir
 function Missile.UpdateForces(self: Missile, dir: CFrame?)
-
 	assert(self.fields.power,"power is null?")
 	if dir then
 		self.mainVel.VectorVelocity = dir.LookVector.Unit * self.speed
@@ -274,16 +273,21 @@ end
 --- @param targets {string} - the names of emitters to act upon
 function Missile.FX(self: Missile, targets: {string}, on: boolean)
 
-
 	local emitters = self.object:FindFirstChild("Emitters")
 	assert(emitters,"emitters not found in missile of type " .. self.fields.model .. ".")
+	print("reached?")
 	for _,emitter in pairs(emitters:GetChildren()) do
+		print("hullo?")
 		if not emitter:IsA("BasePart") then 
 			warn("warning: there should be nothing but baseparts as children of folder Emitters in missile of type " .. self.fields.model .. ".")
 			continue 
 		end
+		print("m found")
 		if table.find(targets,emitter.Name) then
+			print("m found2")
 			for _, fx in pairs(emitter:GetChildren()) do
+				print(fx)
+
 				if fx:IsA("ParticleEmitter") then
 					fx.Enabled = on
 				elseif fx:IsA("Sound") then
@@ -292,8 +296,6 @@ function Missile.FX(self: Missile, targets: {string}, on: boolean)
 				end
 			end
 		end
-
-
 	end
 end
 
@@ -302,6 +304,7 @@ end
 
 --- turns on all emitters named to "Launch"
 function Missile.LaunchFX(self: Missile)
+	print("hellooooo")
 	self:FX({"Launch"},true)
 end
 
@@ -321,7 +324,7 @@ function Missile.Run(self: Missile)
 	--figure out the new target to point to
 	local newTarget, _timeToTarget = self:PredictIntercept()
 	local directionToTarget = (newTarget - self.main.Position).Unit
-	local finalTarget = Vector3.new(self.main.Position.X + directionToTarget.X * FORWARD_TRACK, self:GetDesiredAltitude(progress),self.main.Position.Z + directionToTarget.Z * FORWARD_TRACK)
+	local finalTarget = Vector3.new(self.main.Position.X + directionToTarget.X * FORWARD_TRACK, self:GetDesiredAltitude(progress, self.fields.origin,self.fields.target),self.main.Position.Z + directionToTarget.Z * FORWARD_TRACK)
 	newTarget = finalTarget
 	
 	--orient the missile

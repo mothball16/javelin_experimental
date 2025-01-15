@@ -1,6 +1,7 @@
 --!strict
 --[[
-This controller requests the creation and deletion of missile systems
+This controller requests the creation and deletion of missile systems.
+This actually doesn't need the eventbus because it relies on built-in events
 ]]
 
 -- paths & services -------------------------------------------------------
@@ -26,11 +27,11 @@ local player = game.Players.LocalPlayer
 ---------------------------------------------------------------------------
 local SystemCache: {[string]: Types.MissileSystem} = {}
 
-local SysController = {
-	Name = "SysController",
+local SysHandler = {
+	Name = "SysHandler",
 }
 
-function SysController:Init()
+function SysHandler:Init(EventBus: Types.EventBus)
 	local maid = Maid.new()
 
 	local function CharChildAdded(child: Instance)
@@ -106,13 +107,13 @@ function SysController:Init()
 		maid:DoCleaning()
 	end)
 
-	print("SysController initialized !!")
+	print("SysHandler initialized !!")
 end
 
 --- validate that the controller implements MissileSystem, then require and return it
 --- @param name string - the name of the system 
 --- @return Types.MissileSystem - the system
-function SysController:GetSystem(name: string): Types.MissileSystem?
+function SysHandler:GetSystem(name: string): Types.MissileSystem?
 	if SystemCache[name] then return SystemCache[name] end
 
 	--check if the controller exists
@@ -128,7 +129,7 @@ function SysController:GetSystem(name: string): Types.MissileSystem?
 	return sys :: Types.MissileSystem
 end
 
-function SysController:LoadSystem(system: Types.MissileSystem,isSeat: boolean,...)
+function SysHandler:LoadSystem(system: Types.MissileSystem,isSeat: boolean,...)
 	local sys: Types.MissileSystem? = State.currentSystem()
 	if sys then
 		self:UnloadSystem()
@@ -140,7 +141,7 @@ function SysController:LoadSystem(system: Types.MissileSystem,isSeat: boolean,..
 
 end
 
-function SysController:UnloadSystem()
+function SysHandler:UnloadSystem()
 	local sys: Types.MissileSystem? = State.currentSystem()
 	if sys then
 		sys:Destroy()
@@ -180,7 +181,7 @@ end)
 		object = child
 	}) :: Types.MissileSystem)
 
-function SysController:SetupSystem(newSys: Types.MissileSystem)
+function SysHandler:SetupSystem(newSys: Types.MissileSystem)
 	local MissileController = Knit.GetController("MissileController")
 	--since we know a new system is now being introduced, clean out the current system
 	if system then
@@ -197,4 +198,4 @@ function SysController:SetupSystem(newSys: Types.MissileSystem)
 end]]
 
 
-return SysController
+return SysHandler

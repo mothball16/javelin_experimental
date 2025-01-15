@@ -40,8 +40,6 @@ export type MissileFields = MissileConfig & {
 export type MissileConfig = {
 	--really shouldn't be touched unless you're trying to intentionally make a faulty missile; determines the max iterations the prediction algorithm can run through
 	iterations: number?,
-	--peak flight altitude above the origin altitude
-	peak: number?,
 	--maximum studs per second the missile can reach
 	maxSpeed: number?,
 	--how many studs per second the missile speed increases by
@@ -59,7 +57,7 @@ export type MissileConfig = {
 	--the power of the MainVel mover (less = more sluggish behavior)
 	power: number?,
 	--any override functions you want to add
-	functions: {[string]: (any) -> any}?,
+	functions: {[string]: (...any) -> ...any}?,
 }
 
 --relevant data for replication (on missile creation)
@@ -154,18 +152,20 @@ would be the responsible thing to do.
 
 but ultimately the only person reading this script is me. so Whatever !!!
 ]]
-export type EventBus = {
+export type EventBus = typeof(setmetatable({}, {})) & {
     Missile: {
+		--sent by (any system that fires a missile)
+		--received by MissileHandler
 		SendCreationRequest: Signal.Signal<MissileFields,(any) -> ()>,
-		SendUpdateRequest: Signal.Signal<any>,
 		SendDestroyRequest: Signal.Signal<...any>,
 		
+		--sent by MissileH
 		OnFired: Signal.Signal<MissileReplData, MissileSnapshot>,
         OnUpdated: Signal.Signal<string, MissileSnapshot>,
 		OnDestroyed: Signal.Signal<string>,
 	},
 	--the event bus can be used conventionally to dynamically create signals but it isn't the greatest idea
-	Generic: {[string]: Signal.Signal<...any>}
+	Generic: {[string]: Signal.Signal<...any>},
 }
 
 
