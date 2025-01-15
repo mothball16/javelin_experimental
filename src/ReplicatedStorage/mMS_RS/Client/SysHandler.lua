@@ -9,15 +9,15 @@ local Packages = 	RS:WaitForChild("Packages")
 local mMS_RS = 		RS:WaitForChild("mMS_RS")
 local Modules = 	mMS_RS:WaitForChild("Modules")
 local Systems = 	mMS_RS:WaitForChild("Systems")
-local Client = 		Modules:WaitForChild("Client")
+local Client = 		mMS_RS:WaitForChild("Client")
 
 -- dependencies -----------------------------------------------------------
+--local EventBus = 		require(Client:WaitForChild("EventBus"))
 local State = 			require(Client:WaitForChild("SharedState"))
 local Types = 			require(Modules:WaitForChild("Types"))
 local Maid = 			require(Modules:WaitForChild("Maid"))
 local GlobalConfig = 	require(Modules:WaitForChild("GC"))
 local Charm = 			require(Packages:WaitForChild("Charm"))
-
 -- constants --------------------------------------------------------------
 
 -- vars -------------------------------------------------------------------
@@ -60,7 +60,9 @@ function SysController:Init()
 		end
 		--system = system.new(child) :: Types.MissileSystem
 		--init
-		self:LoadSystem(system.new({object = child}),isSeat)
+		self:LoadSystem(system.new({
+			object = child
+		}),isSeat)
 	end
 	
 	

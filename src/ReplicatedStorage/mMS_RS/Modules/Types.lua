@@ -141,4 +141,32 @@ export type CrosshairProps = {
 }
 
 
+--[[
+some functions use generic params where the parameters require a module that would cause a circular dependency 
+if Types required it (the Types file was created some time after the classes themselves were completed)
+
+fixing this would require restructing my code to avoid circular dependencies from getting types, but that 
+would introduce the new problem of having to go revisit a bunch of code since currently objects have types 
+defined in them to automatically add methods whereas this is not possible (?) in an external file
+
+so the choice is lose intellisense on a few functions or fix the pattern that got me into this situation which 
+would be the responsible thing to do.
+
+but ultimately the only person reading this script is me. so Whatever !!!
+]]
+export type EventBus = {
+    Missile: {
+		SendCreationRequest: Signal.Signal<MissileFields,(any) -> ()>,
+		SendUpdateRequest: Signal.Signal<any>,
+		SendDestroyRequest: Signal.Signal<...any>,
+		
+		OnFired: Signal.Signal<MissileReplData, MissileSnapshot>,
+        OnUpdated: Signal.Signal<string, MissileSnapshot>,
+		OnDestroyed: Signal.Signal<string>,
+	},
+	--the event bus can be used conventionally to dynamically create signals but it isn't the greatest idea
+	Generic: {[string]: Signal.Signal<...any>}
+}
+
+
 return module
