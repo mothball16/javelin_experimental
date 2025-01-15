@@ -275,16 +275,12 @@ function Missile.FX(self: Missile, targets: {string}, on: boolean)
 
 	local emitters = self.object:FindFirstChild("Emitters")
 	assert(emitters,"emitters not found in missile of type " .. self.fields.model .. ".")
-	print("reached?")
 	for _,emitter in pairs(emitters:GetChildren()) do
-		print("hullo?")
 		if not emitter:IsA("BasePart") then 
 			warn("warning: there should be nothing but baseparts as children of folder Emitters in missile of type " .. self.fields.model .. ".")
 			continue 
 		end
-		print("m found")
 		if table.find(targets,emitter.Name) then
-			print("m found2")
 			for _, fx in pairs(emitter:GetChildren()) do
 				print(fx)
 

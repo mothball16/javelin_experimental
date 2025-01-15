@@ -66,8 +66,6 @@ local function FOVMask(props: Types.FOVMaskProps)
 	end)
 
 
-
-	print("hullo!!")
 	return e(
 		"Frame",{
 			ref = frame,

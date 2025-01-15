@@ -150,12 +150,6 @@ function SysHandler:UnloadSystem()
 	end
 end
 
-Charm.effect(function()
-	print(State.currentSystem())
-	print(State.systemIsSeat())
-end)
-
-
 
 
 

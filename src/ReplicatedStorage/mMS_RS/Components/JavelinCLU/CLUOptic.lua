@@ -30,7 +30,7 @@ local BORDER_COLOR =	Color3.fromRGB(0,0,0)
 
 --defined params to fix type checking bug (Maybe this is a good practice too Ion know)
 local function CLUOptic(props: {
-	indicators: {[string]: {image: string, state: boolean}},
+	indicators: {[string]: {image: string, state: boolean, [string]: any}},
 	updateSignal: Signal.Signal<any>,
 	visible: Charm.Atom<boolean>,
 	Mask: React.ReactElement<any,any>, 
@@ -102,6 +102,8 @@ local function CLUOptic(props: {
 			visible = state[k].state,
 			on = 0,
 			off = 0.9,
+			onSound = v.onSound,
+			offSound = v.offSound,
 		})
 	end
 	

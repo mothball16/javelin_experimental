@@ -33,29 +33,80 @@ local FOVMask =         require(CLUFolder:WaitForChild("FOVMask"))
 local NFOVStadia =      require(CLUFolder:WaitForChild("NFOVStadia"))
 local WFOVStadia =      require(CLUFolder:WaitForChild("WFOVStadia"))
 -- constants ------------------------------------------------------------------------------
-local MSL_TYPE =    "FGM-148 Warhead"
+local MSL_TYPE = "FGM-148 Warhead"
+local SWITCH_ON = "rbxassetid://9120102763"
 local INDICATOR_DEFAULTS =  {
-    ["BCU_PLUS"] =  {image = "rbxassetid://89722159180463", state = false},
-    ["CLU"] =       {image = "http://www.roblox.com/asset/?id=99363953262967", state = false},
-    ["CLU_PLUS"] =  {image = "rbxassetid://120742308197590", state = false},
-    ["DAY"] =       {image = "rbxassetid://78672229303453", state = true},
-    ["DIR"] =       {image = "rbxassetid://130596689947010", state = false},
-    ["FAIL"] =      {image = "rbxassetid://87552336360294", state = false},
-    ["FLTR"] =      {image = "rbxassetid://100690720477052", state = false},
-    ["HANGFIRE"] =  {image = "rbxassetid://80690717062067", state = false},
-    ["MSL"] =       {image = "rbxassetid://113910383142154", state = false},
-    ["NFOV"] =      {image = "rbxassetid://116625289291108", state = false},
-    ["NIGHT"] =     {image = "http://www.roblox.com/asset/?id=108927303018110", state = false},
-    ["SEEK"] =      {image = "rbxassetid://122333432415827", state = false},
-    ["TOP"] =       {image = "rbxassetid://81416663556280", state = true},
-    ["WFOV"] =      {image = "rbxassetid://97724947789086", state = true},
+    ["BCU_PLUS"] = {
+        image = "rbxassetid://89722159180463", 
+        state = false
+    },
+    ["CLU"] = {
+        image = "http://www.roblox.com/asset/?id=99363953262967", 
+        state = false
+    },
+    ["CLU_PLUS"] = {
+        image = "rbxassetid://120742308197590", 
+        state = false
+    },
+    ["DAY"] = {
+        image = "rbxassetid://78672229303453",
+        onSound = SWITCH_ON,
+        state = true
+    },
+    ["DIR"] = {
+        image = "rbxassetid://130596689947010", 
+        onSound = SWITCH_ON,
+        state = false
+    },
+    ["FAIL"] = {
+        image = "rbxassetid://87552336360294", 
+        state = false
+    },
+    ["FLTR"] = {
+        image = "rbxassetid://100690720477052", 
+        onSound = SWITCH_ON,
+        state = false
+    },
+    ["HANGFIRE"] = {
+        image = "rbxassetid://80690717062067", 
+        state = false
+    },
+    ["MSL"] = {
+        image = "rbxassetid://113910383142154", 
+        state = false
+    },
+    ["NFOV"] = {
+        image = "rbxassetid://116625289291108", 
+        onSound = SWITCH_ON,
+        state = false
+    },
+    ["NIGHT"] = {
+        image = "http://www.roblox.com/asset/?id=108927303018110", 
+        onSound = SWITCH_ON,
+        state = false
+    },
+    ["SEEK"] = {
+        image = "rbxassetid://122333432415827", 
+        state = false
+    },
+    ["TOP"] = {
+        image = "rbxassetid://81416663556280",
+        onSound = SWITCH_ON,
+        state = true
+    },
+    ["WFOV"] =      {
+        image = "rbxassetid://97724947789086", 
+        onSound = SWITCH_ON,
+        state = true
+    },
+
 }
 
 local BINDS: {[string]: Enum.KeyCode} = {
     ["Seek"] = Enum.KeyCode.F,
-    ["Path"] = Enum.KeyCode.T,
+    ["Path"] = Enum.KeyCode.G,
     ["NV"] = Enum.KeyCode.H,
-    ["FOV"] = Enum.KeyCode.G,
+    ["FOV"] = Enum.KeyCode.T,
 }
 
 --(wide is 4x, narrow is 9x)
@@ -81,7 +132,7 @@ FGM148System.__index = FGM148System
 type self = {
     Targeter: TargetLocker.TargetLocker,
     rayParams: RaycastParams,
-    indicators: {[string]: {image: string, state: boolean}},
+    indicators: {[string]: {image: string, state: boolean, [string]: any}},
     root: any,
     OnIndicatorsUpdated: Signal.Signal<{[string]: {image: string, state: boolean}}>,
     OnZoomToggled: Signal.Signal<boolean>,
@@ -263,7 +314,6 @@ function FGM148System.Setup(self: FGM148System)
                     if self.Targeter:Check(char.Head.Position, (lockAtt.WorldPosition - char.Head.Position).Unit * self.Targeter.config.maxDist :: number) then
                         self.Targeter:Update(dt)
                     else
-                        print("unlocked!!! check failed")
                         self.seeking(false)
                         self.Targeter:DestroyLock()
                         self._maid.seekConnection = nil 
