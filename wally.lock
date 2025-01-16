@@ -95,7 +95,7 @@ dependencies = [["collections", "jsdotlua/collections@1.2.7"]]
 [[package]]
 name = "jzou0/javelin-experimental"
 version = "0.1.0"
-dependencies = [["Charm", "littensy/charm@0.8.1"], ["CharmSync", "littensy/charm-sync@0.1.1"], ["Comm", "sleitnick/comm@1.0.1"], ["Input", "sleitnick/input@2.3.0"], ["Net", "sleitnick/net@0.2.0"], ["ReactCharm", "littensy/react-charm@0.1.1"], ["ReactLua", "jsdotlua/react@17.2.1"], ["ReactRoblox", "jsdotlua/react-roblox@17.2.1"], ["Ripple", "littensy/ripple@0.9.2"], ["Shake", "sleitnick/shake@1.1.0"], ["Signal", "sleitnick/signal@2.0.1"]]
+dependencies = [["Charm", "littensy/charm@0.8.1"], ["CharmSync", "littensy/charm-sync@0.1.1"], ["Input", "sleitnick/input@2.3.0"], ["Net", "sleitnick/net@0.2.0"], ["ReactCharm", "littensy/react-charm@0.1.1"], ["ReactLua", "jsdotlua/react@17.2.1"], ["ReactRoblox", "jsdotlua/react-roblox@17.2.1"], ["Ripple", "littensy/ripple@0.9.2"], ["Shake", "sleitnick/shake@1.1.0"], ["Signal", "sleitnick/signal@2.0.1"], ["TypedRemote", "sleitnick/typed-remote@0.2.0"]]
 
 [[package]]
 name = "littensy/charm"
@@ -118,11 +118,6 @@ version = "0.9.2"
 dependencies = [["Promise", "evaera/promise@4.0.0"]]
 
 [[package]]
-name = "sleitnick/comm"
-version = "1.0.1"
-dependencies = [["Option", "sleitnick/option@1.0.5"], ["Promise", "evaera/promise@4.0.0"], ["Signal", "sleitnick/signal@2.0.1"]]
-
-[[package]]
 name = "sleitnick/input"
 version = "2.3.0"
 dependencies = [["Signal", "sleitnick/signal@2.0.1"], ["Trove", "sleitnick/trove@1.5.0"]]
@@ -130,11 +125,6 @@ dependencies = [["Signal", "sleitnick/signal@2.0.1"], ["Trove", "sleitnick/trove
 [[package]]
 name = "sleitnick/net"
 version = "0.2.0"
-dependencies = []
-
-[[package]]
-name = "sleitnick/option"
-version = "1.0.5"
 dependencies = []
 
 [[package]]
@@ -150,4 +140,9 @@ dependencies = []
 [[package]]
 name = "sleitnick/trove"
 version = "1.5.0"
+dependencies = []
+
+[[package]]
+name = "sleitnick/typed-remote"
+version = "0.2.0"
 dependencies = []

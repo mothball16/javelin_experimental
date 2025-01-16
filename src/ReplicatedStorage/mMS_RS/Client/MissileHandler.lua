@@ -10,13 +10,12 @@ local Packages = 		RS:WaitForChild("Packages")
 local mMS_RS = 			RS:WaitForChild("mMS_RS")
 local Modules = 		mMS_RS:WaitForChild("Modules")
 
+local Network = 		require(mMS_RS:WaitForChild("Network"))
 local Types = 			require(Modules:WaitForChild("Types"))
 local Missile = 		require(Modules:WaitForChild("Missile"))
 local GlobalConfig = 	require(Modules:WaitForChild("GC"))
 
 --local Signal = 			require(Packages:WaitForChild("Signal"))
-local Net = 			require(Packages:WaitForChild("Net"))
-
 
 local MissileUpdates: {[string]: {
 	main: Missile.Missile,
@@ -30,10 +29,14 @@ local MissileHandler = {
 function MissileHandler:Init(EventBus: Types.EventBus)
 
 	local function UpdateMissile(missile: Missile.Missile)
-		Net:RemoteEvent("UpdateMissile"):FireServer(missile.fields.identifier :: string, missile:Snapshot())
+		Network.RequestUpdateMissile:FireServer(missile.fields.identifier :: string, missile:Snapshot())
 	end
+
+
+	-- Server connections -------------------------------------------------------------------------
+
 	--- Register the missile on our client.
-	EventBus.Missile.OnFired:Connect(function(data, snapshot)
+	Network.OnMissileFired.OnClientEvent:Connect(function(data, snapshot)
 		local newMissile = Missile.new(data.fields)
 		newMissile.main.Anchored = true
 		MissileUpdates[data.identifier] = {
@@ -47,7 +50,7 @@ function MissileHandler:Init(EventBus: Types.EventBus)
 	--- [!] There are some edge cases where the client may join while a missile is going through its run time.
 	--- While this may cause missiles to appear invisible and cause "ghost" explosions, this is not an incredibly big issue
 	--- because it's not like missiles last that long anyways.
-	EventBus.Missile.OnUpdated:Connect(function(id, snapshot)
+	Network.OnMissileUpdated.OnClientEvent:Connect(function(id, snapshot)
 		--ensure there is a missile state for the corresponding ID
 		local updateData = MissileUpdates[id]
 
@@ -61,9 +64,13 @@ function MissileHandler:Init(EventBus: Types.EventBus)
 	end)
 
 	--- Remove and clean up the missile from the registry.
-	EventBus.Missile.OnDestroyed:Connect(function(id: string)
+	Network.OnMissileDestroyed.OnClientEvent:Connect(function(id: string)
 		print("stub")
 	end)
+
+
+	-- Client connections -------------------------------------------------------------------------
+
 
 	--- Create a missile on the client and send a request for the server to register the missile.
 	--- Use callback if needed.
@@ -72,7 +79,7 @@ function MissileHandler:Init(EventBus: Types.EventBus)
 		coroutine.resume(coroutine.create(function()
 			newMissile:Init()
 			--send a request to the server to register the missile
-			Net:RemoteEvent("RegisterMissile"):FireServer(newMissile.fields,newMissile:Snapshot())
+			Network.RequestRegisterMissile:FireServer(newMissile.fields,newMissile:Snapshot())
 	
 			--frequently update the missile until it takes off, as it is closest to the view of the player
 			repeat 
@@ -93,6 +100,9 @@ function MissileHandler:Init(EventBus: Types.EventBus)
 			callback(newMissile)
 		end
 	end)
+
+
+
 
 	print("MissileHandler started !!")
 end

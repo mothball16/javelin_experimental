@@ -119,7 +119,9 @@ function Missile.new(fields: Types.MissileFields): Missile
 	
 	--for cleanup
 	self.fields._maid:GiveTask(self.object)
-	self.fields._maid:GiveTask(self.att)
+	if self.att then
+		self.fields._maid:GiveTask(self.att)
+	end
 	return self
 end
 
@@ -333,15 +335,25 @@ function Missile.Run(self: Missile)
 	self.lastTarget = self.target
 end
 
---- make the missile explode based off the params
-function Missile.Explode(self:Missile)
+
+function Missile.Explode(self: Missile)
+	warn("Missile.Explode should have a custom implementation in the MissileConfig.")
+end
+
+--- define the base 
+function Missile.OnHit(self:Missile)
 	self.main.Anchored = true
 	for i,v in pairs(self.object:GetDescendants()) do
 		if v:IsA("BasePart") then
 			v.Transparency = 1
 		end
 	end
+	--turn off the launch FX (you hit your target)
+	self:FX({"Launch"}, false)
+	self:FX({"Explode"}, true)
+	self:Explode()
 end
+
 
 --- destroy all movers and disconnect connections, causing the missile to appear inert, but does not destroy the objct
 function Missile.Abort(self: Missile)

@@ -3,7 +3,8 @@ local Types = require(game:GetService("ReplicatedStorage"):WaitForChild("mMS_RS"
 
 local TOP_PEAK = 160 * 1/0.3
 local DIR_PEAK = 60 * 1/0.3
-local PEAK_CALC_THETA = 60
+local TOP_PEAK_THETA = 60
+local DIR_PEAK_THETA = 35
 local PHASE_BREAKPOINT = 0.25
 
 
@@ -20,7 +21,7 @@ local function FGM148Warhead(opts: {
 	local conf: Types.MissileConfig = {}
 	--get the necessary variables for the altitude computer
 	local peak = opts.attackDir == "TOP" and TOP_PEAK or DIR_PEAK
-	peak = math.min(peak :: number, math.tan(math.rad(PEAK_CALC_THETA)) * (opts.dist * PHASE_BREAKPOINT))
+	peak = math.min(peak :: number, math.tan(math.rad(opts.attackDir == "TOP" and TOP_PEAK_THETA or DIR_PEAK_THETA)) * (opts.dist * PHASE_BREAKPOINT))
 
 	-- modeled after https://www.desmos.com/calculator/l2kb4axhr4
 	conf.functions = {
@@ -33,8 +34,18 @@ local function FGM148Warhead(opts: {
 				desiredAlt = (math.sin((2 * math.pi) / 3 * (progress + 0.5)) * peak) + target.Y
 			end
 			return desiredAlt
+		end,
+		["Explode"] = function()
+			
 		end
 	}
+
+	conf.serverFunctions = {
+		["Explode"] = function()
+			
+		end
+	}
+
 
 	
 	return conf

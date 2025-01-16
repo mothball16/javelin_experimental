@@ -58,6 +58,8 @@ export type MissileConfig = {
 	power: number?,
 	--any override functions you want to add
 	functions: {[string]: (...any) -> ...any}?,
+	serverFunctions: {[string]: (...any) -> ...any}?,
+
 }
 
 --relevant data for replication (on missile creation)
@@ -159,10 +161,11 @@ export type EventBus = typeof(setmetatable({}, {})) & {
 		SendCreationRequest: Signal.Signal<MissileFields,(any) -> ()>,
 		SendDestroyRequest: Signal.Signal<...any>,
 		
+		--[[archived because this should be delegated to Network.lua
 		--sent by MissileH
 		OnFired: Signal.Signal<MissileReplData, MissileSnapshot>,
         OnUpdated: Signal.Signal<string, MissileSnapshot>,
-		OnDestroyed: Signal.Signal<string>,
+		OnDestroyed: Signal.Signal<string>,]]
 	},
 	--the event bus can be used conventionally to dynamically create signals but it isn't the greatest idea
 	Generic: {[string]: Signal.Signal<...any>},

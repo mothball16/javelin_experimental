@@ -4,11 +4,10 @@
 local RS = game:GetService("ReplicatedStorage")
 local PS = game:GetService("Players")
 local mMS_RS = RS:WaitForChild("mMS_RS")
-local Packages = RS:WaitForChild("Packages")
 local Modules = mMS_RS:WaitForChild("Modules")
 
 -- dependencies -----------------------------------------------------------
-local Net = require(Packages:WaitForChild("Net"))
+local Network = require(mMS_RS:WaitForChild("Network"))
 local Types = require(Modules:WaitForChild("Types"))
 
 -- constants --------------------------------------------------------------
@@ -28,15 +27,10 @@ local MissileService = {
 }
 
 
---do vars in KnitInit
 
 
 function MissileService:Init()
-	local onMissileRegistered = Net:RemoteEvent("OnMissileRegistered")
-	local onMissileUpdated = Net:RemoteEvent("OnMissileUpdated")
-	local onMissileDestroyed = Net:RemoteEvent("OnMissileDestroyed")
-
-	Net:RemoteEvent("RegisterMissile").OnServerEvent:Connect(function(player: Player,config: Types.MissileFields, snapshot: Types.MissileSnapshot)
+	Network.RequestRegisterMissile.OnServerEvent:Connect(function(player, config, snapshot)
 		assert(config.identifier,"no identifier on missile")
 		local missileData: Types.MissileReplData = {
 			identifier = config.identifier, --necessary for client-side missile cache
@@ -53,7 +47,7 @@ function MissileService:Init()
 		--fire updates
 		for _, v in PS:GetPlayers() do
 			if not DEBUG_MODE and v == player then continue end
-			onMissileRegistered:FireClient(v,missileData, snapshot)
+			Network.OnMissileFired:FireClient(v,missileData, snapshot)
 		end
 	end)
 	
@@ -61,7 +55,7 @@ function MissileService:Init()
 	
 
 
-	Net:RemoteEvent("UpdateMissile").OnServerEvent:Connect(function(player: Player, id: string, snapshot: Types.MissileSnapshot)
+	Network.RequestUpdateMissile.OnServerEvent:Connect(function(player, id, snapshot)
 		local thisMissile: Types.MissileReplData = self.MissileData[id]
 		if not thisMissile then 
 			warn("missile not found?") 
@@ -81,17 +75,9 @@ function MissileService:Init()
 		--fire updates
 		for _,v in PS:GetPlayers() do
 			if not DEBUG_MODE and v == thisMissile.owner then continue end
-			onMissileUpdated:FireClient(v, id, snapshot)
+			Network.OnMissileUpdated:FireClient(v, id, snapshot)
 		end
 	end)
-
-
-
-	
-	Net:RemoteEvent("DestroyMissile").OnServerEvent:Connect(function(player: Player, id: string)
-		
-	end)
-
 
 	print("MissileService initalized !!")
 end

@@ -17,15 +17,14 @@ local ReactRoblox =     require(Packages.ReactRoblox)
 local EventBus =        require(Client:WaitForChild("EventBus"))
 local Signal =          require(Packages:WaitForChild("Signal"))
 local Input =           require(Packages:WaitForChild("Input"))
---local Net =             require(Packages:WaitForChild("Net"))
 local Charm =           require(Packages:WaitForChild("Charm"))
 local Maid =            require(Modules:WaitForChild("Maid"))
 local Types =           require(Modules:WaitForChild("Types"))
-local TargetLocker =    require(Modules:WaitForChild("TargetLocker"))
 local HandheldBase =    require(Modules:WaitForChild("HandheldBase"))
 local GlobalConfig =    require(Modules:WaitForChild("GC"))
 
 local MissileConfig =   require(mMS_RS:WaitForChild("Configs"):WaitForChild("Missiles"):WaitForChild("FGM-148 Warhead"))
+
 
 local CLUOptic =        require(CLUFolder:WaitForChild("CLUOptic"))
 local Crosshair = 		require(CLUFolder:WaitForChild("Crosshair"))
@@ -113,6 +112,10 @@ local BINDS: {[string]: Enum.KeyCode} = {
 local WIDE_FOV = 70/4
 local NARROW_FOV = 70/9
 
+local CLU_FAILURE_PERCENT = 0
+local BIT_FAILURE_PERCENT = 10
+local BCU_LIFETIME = 60
+
 -- vars ------------------------------------------------------------------------------------
 local e = React.createElement
 
@@ -130,18 +133,23 @@ local FGM148System = {}
 FGM148System.__index = FGM148System
 
 type self = {
-    Targeter: TargetLocker.TargetLocker,
+   
     rayParams: RaycastParams,
     indicators: {[string]: {image: string, state: boolean, [string]: any}},
     root: any,
     OnIndicatorsUpdated: Signal.Signal<{[string]: {image: string, state: boolean}}>,
     OnZoomToggled: Signal.Signal<boolean>,
     
+    --whether the FLIR is on or off
     nv: Charm.Atom<boolean>,
-    seeking: Charm.Atom<boolean>,
+
+    
+
+    --whether the CLU is being looked into
     zoomed: Charm.Atom<boolean>,
-    zoomType: Charm.Atom<string>,
-    missilePath: Charm.Atom<string>,
+    
+    zoomType: Charm.Atom<"wide" | "narrow">,
+    missilePath: Charm.Atom<"top" | "dir">,
     bounds: Charm.Atom<{pos: Vector2, size: Vector2}>,
 
     firePart: BasePart,
@@ -173,7 +181,6 @@ function FGM148System.new(args: {
 
     --guaranteed state vars on loadup
     self.zoomed = Charm.atom(false)
-    self.seeking = Charm.atom(false)
     self.zoomType = Charm.atom("wide")
     self.bounds = Charm.atom({pos = Vector2.new(), size = Vector2.new()})
 
@@ -183,13 +190,7 @@ function FGM148System.new(args: {
         
 
     --set up the locking system
-    self.Targeter = TargetLocker.new({
-        rayParams = self.rayParams,
-        checkWall = true,
-        maxDist = 2000,
-        lockTime = 0.5,
-        bounds = self.bounds,
-    })
+   
 
 
     self._maid:GiveTask(self.Targeter)
@@ -245,8 +246,8 @@ function FGM148System.InitInterface(self: FGM148System)
         self.indicators.DIR.state = self.missilePath() == "DIR"
         self.indicators.NIGHT.state = self.nv()
         self.indicators.DAY.state = not self.nv()
-        self.indicators.WFOV.state = self.zoomType() == "wide"
-        self.indicators.NFOV.state = self.zoomType() == "narrow"
+        self.indicators.WFOV.state = self.zoomType() == "wide" and not self.seeking()
+        self.indicators.NFOV.state = self.zoomType() == "narrow" and not self.seeking()
         self.OnIndicatorsUpdated:Fire(self.indicators)       
     end))
 
@@ -272,9 +273,7 @@ function FGM148System.Setup(self: FGM148System)
     --connect inputs
     self._maid:GiveTask(Keyboard.KeyDown:Connect(function(key: Enum.KeyCode)
         if key == BINDS.Seek then
-            if self.Targeter:CreateLock(char.Head.Position, cam.CFrame.LookVector.Unit * 1000) then
-                self.seeking(true)
-            end
+            --STUB: call seeker method (on)
         elseif key == BINDS.FOV then
             self.zoomType(self.zoomType() == "wide" and "narrow" or "wide")
         elseif key == BINDS.Path then
@@ -286,8 +285,7 @@ function FGM148System.Setup(self: FGM148System)
 
     self._maid:GiveTask(Keyboard.KeyUp:Connect(function(key: Enum.KeyCode)
         if key == BINDS.Seek then
-            self.seeking(false)
-            self.Targeter:DestroyLock()
+            --STUB: call seeker method (off)
         end
     end))
 
@@ -304,28 +302,7 @@ function FGM148System.Setup(self: FGM148System)
         end
     end))
 
-    --handle seeking updates
-    self._maid:GiveTask(Charm.effect(function()
-        if self.seeking() then
-            self._maid.seekConnection = RUS.RenderStepped:Connect(function(dt: number)
-                local lockAtt = self.Targeter.lockAtt()
-                if lockAtt then
 
-                    if self.Targeter:Check(char.Head.Position, (lockAtt.WorldPosition - char.Head.Position).Unit * self.Targeter.config.maxDist :: number) then
-                        self.Targeter:Update(dt)
-                    else
-                        self.seeking(false)
-                        self.Targeter:DestroyLock()
-                        self._maid.seekConnection = nil 
-                    end
-                else
-                    self._maid.seekConnection = nil
-                end
-            end)
-        else
-            self._maid.seekConnection = nil
-        end
-    end))
 end
 
 function FGM148System.Destroy(self: FGM148System)

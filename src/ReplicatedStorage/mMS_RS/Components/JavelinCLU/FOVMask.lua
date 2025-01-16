@@ -75,7 +75,7 @@ local function FOVMask(props: Types.FOVMaskProps)
 			Size = UDim2.new(ZOOM_TYPES[zoomType].width, 0, 1.000, 0),
 			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 			Visible = visFinal,
-			ZIndex = -1000,
+			ZIndex = -10000,
 		},{
 			Ratio = React.createElement("UIAspectRatioConstraint", {
 				AspectRatio = ZOOM_TYPES[zoomType].ratio
@@ -86,7 +86,7 @@ local function FOVMask(props: Types.FOVMaskProps)
 					Position = UDim2.new(1.000, 0, -5.000, 0),
 					Size = UDim2.new(10.000, 0, 10.000, 0),
 					BackgroundColor3 = Color3.fromRGB(150, 150, 150),
-					ZIndex = -1000,
+					ZIndex = -10000,
 				}),
 			FrameLeft = e(
 				"Frame",{
@@ -95,7 +95,7 @@ local function FOVMask(props: Types.FOVMaskProps)
 					Position = UDim2.new(0.000, 0, -5.000, 0),
 					Size = UDim2.new(10.000, 0, 10.000, 0),
 					BackgroundColor3 = Color3.fromRGB(150, 150, 150),
-					ZIndex = -1000,
+					ZIndex = -10000,
 				}),
 			FrameBottom = e(
 				"Frame",{
@@ -103,7 +103,7 @@ local function FOVMask(props: Types.FOVMaskProps)
 					Position = UDim2.new(0.000, 0, 1.000, 0),
 					Size = UDim2.new(1.000, 0, 10.000, 0),
 					BackgroundColor3 = Color3.fromRGB(150, 150, 150),
-					ZIndex = -1000,
+					ZIndex = -10000,
 				}),
 			FrameTop = e(
 				"Frame",{
@@ -111,7 +111,7 @@ local function FOVMask(props: Types.FOVMaskProps)
 					AnchorPoint = Vector2.new(0.000, 1.000),
 					Size = UDim2.new(1.000, 0, 10.000, 0),
 					BackgroundColor3 = Color3.fromRGB(150, 150, 150),
-					ZIndex = -1000,
+					ZIndex = -10000,
 				})
 		}
 	)	

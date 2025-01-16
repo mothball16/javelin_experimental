@@ -22,10 +22,12 @@ local EventBus = {
         --SendUpdateRequest = Signal.new(),
 
 
+        --[[ archived, thishas been delegated to Network
         --on replication connections
         OnFired = Signal.new(),
         OnUpdated = Signal.new(),
         OnDestroyed = Signal.new(),
+        ]]
     },
 
 
